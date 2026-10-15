@@ -1,0 +1,58 @@
+Yamahama — Yamaha SR-C30A firmware
+Official sources checked: 2 October 2026.
+
+1. What is known
+
+The actual SR-C30A soundbar reported version 1.00 during testing. This does not mean that 1.00 is the latest available version. The current reading from your connection is shown above this guide and in the Device information window opened from the Help menu. Without a connection, the application does not know the device's version; after disconnection, the previous reading is marked “Last”. The version number is read when connecting, so reconnect after any update.
+
+No public firmware for SR-C30A was found in Yamaha's official European, UK or Australian catalogues; the firmware section of the US page was also empty. There is no verified update file, new version number or release date to provide here. This is the result of checking on the date stated, not a guarantee that later or service-only updates do not exist. Yamahama does not check the catalogue automatically.
+
+2. Where to obtain firmware
+
+Use the “Copy SR-C30A download address” button, then paste the address into your browser to open Yamaha's page for this exact model. Look for the Firmware / Software section. Use a package only if its description explicitly includes SR-C30A and your regional variant. Also download the instructions supplied with that particular release, and read the requirements and release notes before starting.
+
+If the list is empty, contact Yamaha or an authorised service centre. Provide the SR-C30A model, region of purchase and version read by the application; ask whether newer firmware exists and whether the update can be performed by the user or requires service. Give the serial number only to official support, when needed. Yamahama does not send anything on your behalf.
+
+Example question for support:
+“I have a Yamaha SR-C30A purchased in [country/region]. The device reports firmware [version from the application]. Is newer firmware available for this variant? Please provide the official package and instructions for updating through the UPDATE ONLY port, or let me know if a service update is required.”
+
+Do not download firmware for SR-C20A, SR-C30A from an unconfirmed region, or another soundbar just because its name is similar. A shared SR-C30A/ATS-C300 safety guide does not prove that their firmware is compatible. The ASUS USB-BT540 driver and an Android application update are not soundbar firmware either.
+
+3. How to update — limits of the documented procedure
+
+The official SR-C30A manual identifies a rear USB port labelled UPDATE ONLY. Its purpose is to update firmware. Yamaha refers users to the instructions supplied with the firmware for details.
+
+The owner's manual alone does not provide the full update sequence for this model: the storage medium's format and capacity, file name, button combination, LED indications, operation duration or recovery procedure after an error. Since no public package containing those instructions was found, there is no basis for giving a verified step-by-step sequence. Do not assume FAT32 or use a button combination from another model. Do not connect a computer to the UPDATE ONLY port just to try it.
+
+When you receive the correct package and instructions from Yamaha:
+1) Confirm compatibility with the model, region and currently installed version, and make sure this is a user procedure rather than a service-only procedure.
+2) Prepare the storage medium or tool exactly as instructed in that package. Do not rename files on your own or replace the specified procedure with a Bluetooth method.
+3) Ensure a stable power supply. Follow the specified sequence, indications and completion conditions. During writing, do not disconnect power or remove the storage medium unless the official procedure for that situation explicitly instructs you to do so.
+4) Once completion is confirmed, follow the restart instructions. Reconnect Yamahama, read the version and check that the soundbar works. Elapsed time or clicking a button alone is not proof that the update has finished.
+5) If an error occurs, use the recovery procedure supplied with the package or contact Yamaha support. Do not try random files or button combinations.
+
+4. What Yamahama supports
+
+The application reads the model and firmware over BLE, displays this guide offline and lets you copy official addresses for use in a browser. The copy buttons replace the clipboard contents with the address; you can also copy selected text from the guide itself. The application does not download or install firmware. There is no documented and verified procedure for updating SR-C30A over BLE; no misleading “Update” button or experimental write commands have been added.
+
+The original application for this model is Sound Bar Remote, not Sound Bar Controller. The official Sound Bar Remote description covers control over Bluetooth and does not provide an SR-C30A update procedure. Do not assume that update features from other Yamaha models or applications apply here.
+
+5. Official sources
+
+SR-C30A — downloads and support (Europe):
+https://europe.yamaha.com/en/audio/home-audio/products/sound-bar/sr-c30a/support.html
+
+SR-C30A — US download page (does not prove compatibility with the European variant):
+https://usa.yamaha.com/products/audio_visual/sound_bar/sr-c30a/downloads.html
+
+SR-C30A — rear panel and UPDATE ONLY port description:
+https://manual.yamaha.com/av/22/src30a/en-US/9042053515.html
+
+SR-C30A — USB connector specification:
+https://manual.yamaha.com/av/22/src30a/en-US/9035589771.html
+
+SR-C30A — control through Sound Bar Remote:
+https://manual.yamaha.com/av/22/src30a/en-US/9033635211.html
+
+Yamaha Poland — support contact:
+https://pl.yamaha.com/pl/support/contacts/index.html

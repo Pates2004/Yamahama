@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseAppHost>true</UseAppHost>
+    <AssemblyName>Yamahama</AssemblyName>
+    <Title>Yamahama</Title>
+    <Product>Yamahama</Product>
+    <Description>Unofficial Yamaha SR-C30A remote for Windows</Description>
+    <RootNamespace>YamahaRemote.Windows</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>0.16.0</Version>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Pates2004/Yamahama</RepositoryUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <ProjectReference Include="../YamahaRemote.Core/YamahaRemote.Core.csproj" />
+    <EmbeddedResource Include="../../docs/firmware-sr-c30a.txt" LogicalName="Yamahama.Guides.Firmware.pl.txt" />
+    <EmbeddedResource Include="../../docs/panel-dotykowy.txt" LogicalName="Yamahama.Guides.TouchPanel.pl.txt" />
+    <EmbeddedResource Include="../../docs/en/firmware-sr-c30a.txt" LogicalName="Yamahama.Guides.Firmware.en.txt" />
+    <EmbeddedResource Include="../../docs/en/panel-dotykowy.txt" LogicalName="Yamahama.Guides.TouchPanel.en.txt" />
+    <EmbeddedResource Include="../../docs/reset-sr-c30a.txt" LogicalName="Yamahama.Guides.Reset.pl.txt" />
+    <EmbeddedResource Include="../../docs/en/reset-sr-c30a.txt" LogicalName="Yamahama.Guides.Reset.en.txt" />
+    <Content Include="../../langs/*.lng" Link="langs/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+  </ItemGroup>
+</Project>

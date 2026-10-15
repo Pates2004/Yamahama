@@ -1,0 +1,56 @@
+Yamahama — Yamaha SR-C30A and touch panel lock (Child Lock)
+Source status: 2 October 2026.
+
+Can this be done through the application?
+
+The current Yamahama does not enable or disable this lock and does not read its state. There is no verified Child Lock command in our BLE mapping. No such feature was found in the examined Android application Sound Bar Remote 2.50 either. The soundbar itself supports it: Yamaha documents the procedure using the SR-C30A remote control. The lack of application support does not mean the device lacks the feature, nor does it prove that no undiscovered protocol command exists.
+
+1. Disabling or re-enabling the panel
+
+1) Leave the soundbar connected to power, but turn it off using the power button on the remote control — it must be in standby, not on or unplugged. Dark LEDs alone do not prove it is in standby: the brightness setting can also turn them off while it is operating.
+2) Point the remote at the soundbar and hold down INFO for at least 5 seconds. This means the INFO button on the remote, not a button on the soundbar, DIM or a combination of several buttons.
+3) The setting switches to the opposite state. At the moment of confirmation, check the TV indicator:
+   - lit: Child Lock enabled, touch panel locked;
+   - unlit: Child Lock disabled, touch panel unlocked.
+   The soundbar turns on after the setting is applied. The manual does not describe confirmation by a number of flashes.
+4) To reverse the change, turn the soundbar off with the remote again, then hold down INFO for at least 5 seconds again. This is a toggle, not separate “lock” and “unlock” commands.
+
+Child Lock is disabled by default, but that does not establish your unit's current state. There is no need to select a particular input or pair a phone: the procedure requires the remote and a soundbar that is turned off but still connected to power. A short press of INFO during operation displays other information for 3 seconds; it is not a Child Lock status reading. The TV indicator being lit during ordinary playback indicates the selected input and does not confirm the lock. No audible confirmation is documented — if you cannot check the indicator, ask someone to read it rather than guessing the state.
+
+2. What remains active
+
+The lock covers the touch controls on the soundbar: input selection, volume down/up and power. The remote remains a way to control and unlock the device. Child Lock does not turn off audio, Bluetooth, the LEDs or HDMI Control.
+
+The scope of the lock described by Yamaha indicates that ordinary control through Sound Bar Remote/BLE and a TV remote through HDMI Control are not its target. They still require, respectively, a working Bluetooth connection, or an HDMI connection with HDMI Control enabled. This is a distinction between functions based on the documentation, not a test performed here of application or HDMI operation with the lock active. Being able to control the soundbar normally through the application does not mean that the application can change the lock itself.
+
+3. Are all soundbar functions supported?
+
+No. The mapped controls cover power, TV/Optical/Bluetooth/Analog inputs, volume, mute, subwoofer, Stereo/Standard/3D Movie/Game, Clear Voice, Bass Extension and LED brightness; model, firmware and basic status readings are also available. Turning off the LEDs does not disable the touch panel.
+
+Child Lock and the additional settings described in the manual — HDMI Control, Auto Power Standby, Bluetooth Standby, enabling/disabling Bluetooth, dynamic range compression, adjusting the sound for the installation method, and factory initialisation — are not verified features of our BLE control. They should not be represented by non-functional buttons or guessed commands. Mapping the basic commands does not confirm the physical effect of each one either.
+
+A hardware reading confirmed SR-C30A with firmware 1.00. The Child Lock procedure is confirmed by the manual for this exact model, but has not been performed here on the user's unit. Yamahama includes this guide, but does not change or read the lock state.
+
+4. Official sources (addresses checked on 2 October 2026)
+
+Child Lock — SR-C30A procedure:
+https://manual.yamaha.com/av/22/src30a/en-US/9033994635.html
+
+Illustration of confirmation by the TV indicator, from the same page:
+https://manual.yamaha.com/av/22/src30a/Images/png/27021606694389899__en-US__Original.png
+
+Touch controls on the soundbar:
+https://manual.yamaha.com/av/22/src30a/en-US/9041583243.html
+
+Normal INFO use during operation — a separate function:
+https://manual.yamaha.com/av/22/src30a/en-US/9033501451.html
+
+Sound Bar Remote for SR-C30A (not Sound Bar Controller):
+https://manual.yamaha.com/av/22/src30a/en-US/9033635211.html
+https://play.google.com/store/apps/details?id=com.yamaha.ac.SBRemote
+
+Control with a TV remote through HDMI Control:
+https://manual.yamaha.com/av/22/src30a/en-US/9033440267.html
+
+Complete manual for this model, including the CONFIGURATION section:
+https://manual.yamaha.com/av/22/src30a/en-US/

@@ -1,0 +1,63 @@
+Yamahama — managing Bluetooth adapters in Windows
+Guide status: 2 October 2026.
+
+1. The most important rule
+
+The standard Windows Bluetooth stack supports one active radio adapter. Do not enable the built-in MediaTek and ASUS USB-BT540 at the same time. Yamahama uses the adapter selected by Windows; it does not switch or disable adapters itself.
+
+Before changing adapters, disconnect the soundbar in the application. If your keyboard or mouse uses Bluetooth, have a wired device, a non-Bluetooth USB receiver, or the built-in keyboard/touchpad ready. Disabling the radio disconnects its devices, including headphones. After changing adapters, some devices may need to be paired again. Do not remove pairings or drivers as a precaution.
+
+2. Identifying the devices
+
+Press Win+R, type devmgmt.msc and press Enter to open Device Manager. Press Tab to reach the tree, use the arrow keys to select Bluetooth, and press the Right Arrow to expand it. Select a device and press Alt+Enter to open its properties. The General tab shows its status and any error code; Driver shows the provider and version. On the Details tab, the Hardware Ids and Device instance path properties let you identify the specific adapter.
+
+Example adapter model identifiers:
+- ASUS USB-BT540: hardware ID USB\VID_0B05&PID_1BEF.
+- Built-in MediaTek: USB\VID_0489&PID_E110&MI_00.
+
+Microsoft Bluetooth Enumerator, Microsoft Bluetooth LE Enumerator, Yamaha, headphones and HID devices are not a second physical radio. Do not disable them instead of the adapter. Entry names and the layout of the properties depend on the Windows and driver versions. If in doubt, check the ID rather than guessing.
+
+3. Using ASUS USB-BT540
+
+1) Disconnect the soundbar and close applications that use Bluetooth.
+2) In Device Manager, select the physical MediaTek adapter. Press Shift+F10 to open the context menu, choose Disable device and confirm. Do not choose Uninstall device.
+3) Plug in ASUS USB-BT540. If it was disabled manually, choose Enable device for the correct ASUS entry. MediaTek must remain disabled.
+4) Open the ASUS properties: the expected status is This device is working properly, with no error code. A disabled MediaTek showing code 22 is correct in this configuration.
+5) In Windows Settings → Bluetooth & devices, turn Bluetooth on. Shortcut: press Win+R, type ms-settings:bluetooth and press Enter.
+6) In Yamahama, search for the soundbar and connect. BLE control does not require prior pairing as an audio speaker. Pairing for audio playback is a separate action in Windows.
+
+4. Returning to the built-in MediaTek
+
+Disconnect the soundbar. Unplug ASUS from USB or disable only its radio in Device Manager. Only then enable MediaTek. Check the MediaTek status and Bluetooth in Settings. Do not enable both adapters at once. If you return to ASUS later, disable MediaTek again first.
+
+5. ASUS still shows code 31 after disabling MediaTek
+
+Code 31 alone does not prove there is a conflict. Check BTHUSB events: “Only one active Bluetooth adapter is supported” indicates simultaneously active radios. After disabling the other adapter, the USB radio may need to be unplugged and reconnected, or its device instance restarted.
+
+First, make sure the other radio is disabled. Unplug and reconnect ASUS, or disable and enable only ASUS in Device Manager. Do not disable the radio serving your only available keyboard. If the error persists, read the status, ID and events rather than repeatedly removing drivers.
+
+Advanced option — PowerShell:
+- Read-only, with no configuration changes:
+  Get-PnpDevice -Class Bluetooth -PresentOnly | Format-Table Status, FriendlyName, InstanceId -AutoSize
+- Restarting one adapter requires an administrator terminal. In Device Manager, copy the current ASUS Device instance path and check that it contains VID_0B05&PID_1BEF. Then use:
+  pnputil /restart-device "PASTE_THE_EXACT_ASUS_DEVICE_INSTANCE_PATH_HERE"
+  This is a template, not a ready-to-run command. Do not enter an asterisk or the MediaTek ID. The path may change when you use a different USB port. Restarting temporarily disconnects the devices using that radio.
+
+6. Drivers and operation check
+
+After changing adapters, confirm the active radio has no error and the other remains disabled. Then discover SR-C30A in Yamahama and verify connection and status readout. The displayed soundbar firmware number is separate from the adapter driver version.
+
+Download the driver from the manufacturer's official page for the exact adapter model and your Windows version. Do not replace the Windows 11 driver with a Windows 10 branch merely because its number looks different. Review the package instructions before updating. The ASUS driver is not firmware for the Yamaha soundbar.
+
+7. Manufacturer sources
+
+Microsoft — one active adapter in the Windows Bluetooth stack:
+https://learn.microsoft.com/en-us/windows-hardware/drivers/bluetooth/bluetooth-faq#how-many-bluetooth-radios-can-windows-support
+
+ASUS — guide recommending that built-in Bluetooth be disabled before using USB-BT540:
+https://dlcdnets.asus.com/pub/ASUS/wireless/USB-BT540/ET25402_USB-BT540_folded_QSG_400x320mm_PRINT.pdf
+
+ASUS — drivers for USB-BT540:
+https://www.asus.com/networking-iot-servers/wireless-adapters/all-series/usb-bt540/helpdesk_download?model2Name=USB-BT540
+
+This guide is a separate file in the project folder, outside the Yamahama application. Open it in a text editor such as Notepad. You run Windows tool commands yourself; the application does not change adapter configuration.

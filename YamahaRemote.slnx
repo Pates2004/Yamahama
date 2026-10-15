@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/YamahaRemote.Core/YamahaRemote.Core.csproj" />
+    <Project Path="src/YamahaRemote.Windows/YamahaRemote.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/YamahaRemote.Core.Tests/YamahaRemote.Core.Tests.csproj" />
+    <Project Path="tests/YamahaRemote.Windows.Tests/YamahaRemote.Windows.Tests.csproj" />
+  </Folder>
+</Solution>

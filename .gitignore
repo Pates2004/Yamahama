@@ -1,0 +1,8 @@
+/installfiles/
+/AGENTS.md
+/docs/Yamaha-SR-C30A-User-Guide-EN.pdf
+**/bin/
+**/obj/
+/.vs/
+*.user
+*.suo

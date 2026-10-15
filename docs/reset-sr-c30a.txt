@@ -1,0 +1,86 @@
+Yamahama — ustawienia dźwięku i reset fabryczny Yamaha SR-C30A
+Oficjalne źródła sprawdzono 2 października 2026 r.
+
+1. Dwie różne operacje
+
+Przywrócenie wybranego profilu dźwięku oznacza zmianę tylko wskazanych ustawień brzmienia. Nie jest usuwaniem parowania Bluetooth ani pełnym resetem urządzenia. Pełna inicjalizacja fabryczna jest osobną, znacznie szerszą operacją wykonywaną na soundbarze.
+
+Samo otwarcie tego poradnika niczego nie zmienia. Nie ma zweryfikowanego polecenia BLE pełnej inicjalizacji SR-C30A. Poradnik nie jest zdalnym wykonaniem resetu przez Yamahamę.
+
+2. Ograniczony profil dźwięku — bez zgadywania wartości fabrycznych
+
+Zweryfikowane mapowanie podstawowego sterowania obejmuje tryb STEREO / STANDARD / 3D MOVIE / GAME, Clear Voice, Bass Extension oraz regulację poziomu subwoofera. Odczyt poziomu subwoofera w aplikacji ma zakres od -4 do +4; 0 jest środkiem tej skali, nie potwierdzoną przez to wartością fabryczną ani pomiarem w dB.
+
+W sprawdzonych stronach oficjalnej instrukcji SR-C30A nie znaleziono jednoznacznych wartości fabrycznych dla:
+- trybu dźwięku;
+- Clear Voice;
+- Bass Extension;
+- poziomu subwoofera;
+- głównej głośności ani wyciszenia.
+
+Instrukcja opisuje działanie tych funkcji, ale nie wystarcza to do uznania zestawu STANDARD, Clear Voice wyłączone, Bass Extension wyłączone, subwoofer 0 za ustawienia fabryczne. Nie należy tak go nazywać. Nie potwierdzono też całkowicie neutralnego brzmienia tego zestawu: STANDARD jest trybem przestrzennym.
+
+W ustawieniach Yamahama każde zapisane urządzenie może mieć wiele nazwanych profili dźwięku: wybierz profil z listy, zapisz obecne brzmienie pod podaną nazwą, zastosuj wybrany profil lub go usuń. Najpierw świadomie ustaw brzmienie, potem zapisz świeży odczyt. Profile są przechowywane przy urządzeniu w config.json. Nadpisanie tej samej nazwy, zastosowanie i usunięcie wymagają potwierdzenia. Połączenie jednorazowe nie zapisuje urządzenia automatycznie. Reset ustawień aplikacji zachowuje profile, a usunięcie zapisanego urządzenia usuwa jego profile. Nie jest to automatyczne przywrócenie fabrycznego dźwięku.
+
+Bezpiecznie ograniczona operacja ma pozostawić bez zmian zasilanie, wejście, główną głośność, wyciszenie, jasność wskaźników i parowanie. Nie może samoczynnie włączać soundbara, zmieniać źródła ani wyłączać wyciszenia. Jeżeli urządzenie nie jest włączone i połączone, nie należy wykonywać profilu w ciemno. Po zmianach potrzebny jest aktualny odczyt potwierdzający wynik; przerwana operacja może pozostawić profil zastosowany tylko częściowo. Zmiana brzmienia lub subwoofera może zmienić odczuwaną głośność mimo zachowania głównego poziomu.
+
+Yamaha podaje wprost dwie inne wartości fabryczne:
+- kompresja dynamiki, DRC: bez kompresji; ustawienie dotyczy sygnału Dolby Digital;
+- charakterystyka zależna od montażu: instalacja na podstawie / meblu, a nie na ścianie.
+
+Dla tych funkcji nie ma zweryfikowanych poleceń ani odczytu BLE w obecnym mapowaniu. Podstawowy profil nie przywraca ich wartości i nie jest pełnym resetem wszystkich ustawień dźwięku. Nie należy emulować przytrzymania pilota zgadywanym poleceniem Bluetooth. Charakterystyka montażowa powinna odpowiadać rzeczywistemu ustawieniu urządzenia, nawet gdy różni się od fabrycznej.
+
+3. Pełny reset fabryczny — świadoma czynność na urządzeniu
+
+Uwaga: Yamaha opisuje tę operację jako przywrócenie ustawień soundbara do ustawień fabrycznych, nie tylko zmianę brzmienia. Nie zakładaj zachowania dotychczasowych ustawień, głównej głośności, wyciszenia ani wybranego wejścia. Przed rozpoczęciem zanotuj potrzebną konfigurację i świadomie zatrzymaj odtwarzanie na źródle, aby uniknąć niespodziewanego dźwięku.
+
+Oficjalna procedura dla SR-C30A:
+1) Wyłącz soundbar, pozostawiając zasilanie podłączone — ma być w stanie czuwania. Ciemne wskaźniki same w sobie nie dowodzą wyłączenia, bo mogą być wyłączone również podczas pracy.
+2) Na panelu samego soundbara przytrzymaj zwiększanie głośności, czyli głośność +. Trzymając ten element, przytrzymaj również przycisk zasilania na soundbarze, aż wszystkie wskaźniki zaczną migać.
+3) Yamaha pokazuje miganie wszystkich pięciu wskaźników — TV, OPTICAL, BLUETOOTH, ANALOG i SURROUND — jako potwierdzenie zakończenia inicjalizacji.
+
+Chodzi o głośność + oraz zasilanie na soundbarze, nie o głośność -, wybór wejścia ani przyciski pilota. Strona inicjalizacji nie podaje liczby sekund przytrzymania, liczby mignięć ani sygnału dźwiękowego. Nie zastępuj warunku migania wymyślonym czasem. Nie wykonano tu procedury na Twoim egzemplarzu. Jeżeli nie możesz sprawdzić wskaźników, poproś o ich odczytanie; nie zgaduj wyniku. Jeżeli blokada panelu uniemożliwia obsługę, skorzystaj z osobnego poradnika panel-dotykowy.txt; nie zakładaj, że blokada nie dotyczy resetu.
+
+4. Skutki i ponowna konfiguracja
+
+Pełny reset nie zastępuje ograniczonego profilu dźwięku. Instrukcja dokumentuje również fabryczne ustawienia innych funkcji: HDMI Control włączone, Bluetooth włączony, Bluetooth Standby włączone, Child Lock wyłączony, DRC bez kompresji oraz charakterystykę instalacji na podstawie. Domyślne Auto Power Standby zależy od regionalnego modelu: w modelach europejskich jest włączone. Po resecie sprawdź ustawienia potrzebne do używanego połączenia i sposobu montażu.
+
+Strona inicjalizacji nie wylicza skutków dla zapamiętanych parowań Bluetooth ani parowania soundbara z subwooferem. Nie obiecujemy ich zachowania ani nie twierdzimy bez dowodu, że wszystkie są kasowane. Jeśli zachowanie parowania jest warunkiem, nie używaj pełnej inicjalizacji jako resetu samego dźwięku. W razie problemów po resecie zastosuj odpowiednią instrukcję Yamahy dotyczącą połączenia. Nie usuwaj automatycznie parowania w Windows ani zapamiętanego urządzenia w aplikacji.
+
+Zwykłe ponowne uruchomienie to inna operacja. Yamaha opisuje je jako odłączenie przewodów zasilających soundbara i subwoofera od gniazd sieciowych, odczekanie co najmniej 10 sekund, ponowne podłączenie i włączenie. Nie jest to opisana wyżej inicjalizacja fabryczna. Reset nie jest też procedurą wgrywania firmware.
+
+5. Oficjalne źródła dla dokładnie tego modelu
+
+Inicjalizacja fabryczna:
+https://manual.yamaha.com/av/22/src30a/en-US/9034212747.html
+Ilustracja przycisków z tej strony:
+https://manual.yamaha.com/av/22/src30a/Images/png/27021606694350987__Web.png
+Ilustracja zakończenia:
+https://manual.yamaha.com/av/22/src30a/Images/png/9007208184768139__en-US__Original.png
+Nazwy elementów panelu:
+https://manual.yamaha.com/av/22/src30a/en-US/9041583243.html
+Tryby i funkcje dźwięku:
+https://manual.yamaha.com/av/22/src30a/en-US/9032872203.html
+Subwoofer:
+https://manual.yamaha.com/av/22/src30a/en-US/9033142667.html
+Clear Voice:
+https://manual.yamaha.com/av/22/src30a/en-US/9033191691.html
+Bass Extension:
+https://manual.yamaha.com/av/22/src30a/en-US/9033245963.html
+Główna głośność i wyciszenie:
+https://manual.yamaha.com/av/22/src30a/en-US/9032697739.html
+DRC:
+https://manual.yamaha.com/av/22/src30a/en-US/9034151051.html
+Charakterystyka montażowa:
+https://manual.yamaha.com/av/22/src30a/en-US/9045095947.html
+HDMI Control, Bluetooth, Bluetooth Standby, Child Lock i regionalne Auto Power Standby:
+https://manual.yamaha.com/av/22/src30a/en-US/9033755147.html
+https://manual.yamaha.com/av/22/src30a/en-US/9034098699.html
+https://manual.yamaha.com/av/22/src30a/en-US/9034048523.html
+https://manual.yamaha.com/av/22/src30a/en-US/9033994635.html
+https://manual.yamaha.com/av/22/src30a/en-US/9033808139.html
+Ponowne uruchomienie a inicjalizacja:
+https://manual.yamaha.com/av/22/src30a/en-US/9035425035.html
+Połączenie Bluetooth i rozwiązywanie problemów z parowaniem subwoofera:
+https://manual.yamaha.com/av/22/src30a/en-US/9033300619.html
+https://manual.yamaha.com/av/22/src30a/en-US/9091414667.html

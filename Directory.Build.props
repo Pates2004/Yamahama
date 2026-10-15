@@ -1,0 +1,23 @@
+<Project>
+  <PropertyGroup>
+    <ProjectMaterialsDrive Condition="Exists('D:\')">D:</ProjectMaterialsDrive>
+    <ProjectMaterialsDrive Condition="!Exists('D:\')">C:</ProjectMaterialsDrive>
+    <YamahamaProjectRoot>$(MSBuildThisFileDirectory)</YamahamaProjectRoot>
+    <YamahamaProjectName>$([System.IO.Path]::GetFileName($([System.IO.Path]::TrimEndingDirectorySeparator('$(MSBuildThisFileDirectory)'))))</YamahamaProjectName>
+    <ProjectWorkspaceRoot>$(ProjectMaterialsDrive)\work\Workspace\$(YamahamaProjectName)\</ProjectWorkspaceRoot>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <SelfContained>false</SelfContained>
+    <PublishSelfContained>false</PublishSelfContained>
+    <PublishAot>false</PublishAot>
+    <BaseOutputPath>$(ProjectWorkspaceRoot)build\bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(ProjectWorkspaceRoot)build\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'YamahaRemote.Windows.Tests'">
+    <AssemblyMetadata Include="ProjectRoot" Value="$(YamahamaProjectRoot)" />
+    <AssemblyMetadata Include="ProjectWorkspaceRoot" Value="$(ProjectWorkspaceRoot)" />
+  </ItemGroup>
+</Project>

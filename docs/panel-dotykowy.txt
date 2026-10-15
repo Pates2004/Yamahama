@@ -1,0 +1,56 @@
+Yamahama — Yamaha SR-C30A i blokada panelu dotykowego (Child Lock)
+Stan źródeł: 2 października 2026 r.
+
+Czy można to zrobić aplikacją?
+
+Obecna Yamahama nie włącza ani nie wyłącza tej blokady i nie odczytuje jej stanu. Nie ma zweryfikowanej komendy Child Lock w naszym mapowaniu BLE. W zbadanej aplikacji Android Sound Bar Remote 2.50 również nie znaleziono takiej funkcji. Sam soundbar ją obsługuje: Yamaha dokumentuje procedurę z pilotem SR-C30A. Brak obsługi w aplikacji nie oznacza braku funkcji w urządzeniu ani dowodu, że żaden niepoznany rozkaz protokołu nie istnieje.
+
+1. Wyłączenie lub ponowne włączenie panelu
+
+1) Pozostaw soundbar podłączony do zasilania, ale wyłącz go przyciskiem zasilania na pilocie — ma być w stanie czuwania, nie włączony ani odłączony od prądu. Same ciemne diody nie dowodzą czuwania: ustawienie jasności może je wygasić również podczas pracy.
+2) Skieruj pilot na soundbar i przytrzymaj przycisk INFO przez co najmniej 5 sekund. Nie chodzi o przycisk na obudowie, DIM ani kombinację kilku przycisków.
+3) Ustawienie przełączy się na przeciwne. W chwili potwierdzenia sprawdź diodę TV:
+   - świeci: Child Lock włączony, panel dotykowy zablokowany;
+   - nie świeci: Child Lock wyłączony, panel dotykowy odblokowany.
+   Soundbar włącza się po zastosowaniu ustawienia. Instrukcja nie opisuje potwierdzenia liczbą mignięć.
+4) Aby odwrócić zmianę, ponownie wyłącz soundbar pilotem i powtórz przytrzymanie INFO przez co najmniej 5 sekund. To przełącznik, nie osobne polecenia „zablokuj” i „odblokuj”.
+
+Domyślnie Child Lock jest wyłączony, lecz nie dowodzi to bieżącego stanu Twojego egzemplarza. Nie trzeba wybierać konkretnego wejścia ani parować telefonu: procedura wymaga pilota i wyłączonego, zasilanego soundbara. Krótkie INFO podczas pracy pokazuje inne informacje przez 3 sekundy; nie jest odczytem Child Lock. Zwykłe świecenie TV podczas odtwarzania oznacza wybrane wejście i nie potwierdza blokady. Nie opisano dźwiękowego potwierdzenia — jeśli nie możesz ocenić diody, poproś o odczyt zamiast zgadywać stan.
+
+2. Co zostaje aktywne
+
+Blokada obejmuje dotykowe sterowanie na obudowie: wybór wejścia, głośność minus/plus oraz zasilanie. Pilot pozostaje sposobem sterowania i odblokowania urządzenia. Child Lock nie jest wyłączeniem dźwięku, Bluetooth, diod ani HDMI Control.
+
+Z zakresu blokady opisanego przez Yamaha wynika, że zwykłe sterowanie przez Sound Bar Remote/BLE oraz pilot telewizora przez HDMI Control nie jest jej celem. Nadal wymagają one odpowiednio działającego połączenia Bluetooth albo połączenia HDMI i włączonego HDMI Control. To rozróżnienie funkcji według dokumentacji, nie przeprowadzony tutaj test działania aplikacji lub HDMI przy aktywnej blokadzie. Możliwość zwykłego sterowania aplikacją nie oznacza możliwości zmiany samej blokady.
+
+3. Czy obsługiwane są wszystkie funkcje soundbara?
+
+Nie. Zmapowane sterowanie obejmuje zasilanie, wejścia TV/Optical/Bluetooth/Analog, głośność, wyciszenie, subwoofer, Stereo/Standard/3D Movie/Game, Clear Voice, Bass Extension i jasność diod; dostępne są też odczyty modelu, firmware oraz podstawowego stanu. Wygaszenie diod nie wyłącza panelu dotykowego.
+
+Child Lock i dodatkowe ustawienia opisane w instrukcji — HDMI Control, Auto Power Standby, Bluetooth Standby, włączanie/wyłączanie Bluetooth, kompresja dynamiki, dopasowanie brzmienia do montażu oraz inicjalizacja fabryczna — nie są zweryfikowanymi funkcjami naszego sterowania BLE. Nie należy ich udawać przyciskami ani zgadywanymi komendami. Zmapowanie podstawowych komend nie jest też potwierdzeniem fizycznego skutku każdej z nich.
+
+Odczyt sprzętowy potwierdził SR-C30A z firmware 1.00. Procedura Child Lock jest potwierdzona instrukcją dokładnie tego modelu, lecz nie została tutaj wykonana na egzemplarzu użytkownika. Yamahama zawiera ten poradnik, ale nie zmienia ani nie odczytuje blokady.
+
+4. Oficjalne źródła (adresy sprawdzone 2 października 2026 r.)
+
+Child Lock — procedura SR-C30A:
+https://manual.yamaha.com/av/22/src30a/en-US/9033994635.html
+
+Ilustracja potwierdzenia diodą TV z tej samej strony:
+https://manual.yamaha.com/av/22/src30a/Images/png/27021606694389899__en-US__Original.png
+
+Przyciski dotykowe na obudowie:
+https://manual.yamaha.com/av/22/src30a/en-US/9041583243.html
+
+Zwykłe INFO podczas pracy — odrębna funkcja:
+https://manual.yamaha.com/av/22/src30a/en-US/9033501451.html
+
+Sound Bar Remote dla SR-C30A (nie Sound Bar Controller):
+https://manual.yamaha.com/av/22/src30a/en-US/9033635211.html
+https://play.google.com/store/apps/details?id=com.yamaha.ac.SBRemote
+
+Sterowanie pilotem telewizora przez HDMI Control:
+https://manual.yamaha.com/av/22/src30a/en-US/9033440267.html
+
+Pełna instrukcja modelu, w tym rozdział CONFIGURATION:
+https://manual.yamaha.com/av/22/src30a/en-US/

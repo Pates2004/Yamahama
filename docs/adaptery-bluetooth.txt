@@ -1,0 +1,63 @@
+Yamahama — zarządzanie adapterami Bluetooth w Windows
+Stan instrukcji: 2 października 2026 r.
+
+1. Najważniejsza zasada
+
+Standardowy stos Bluetooth Windows obsługuje jeden aktywny adapter radiowy. Nie włączaj równocześnie wbudowanego MediaTeka i ASUS USB-BT540. Yamahama korzysta z adaptera wybranego przez Windows; nie przełącza ani nie wyłącza adapterów samodzielnie.
+
+Przed zmianą adaptera rozłącz soundbar w aplikacji. Jeśli klawiatura lub mysz korzysta z Bluetooth, przygotuj przewodowe urządzenie, odbiornik USB niebędący Bluetooth albo wbudowaną klawiaturę/touchpad. Wyłączenie radia przerwie jego połączenia, również ze słuchawkami. Po zmianie adaptera niektóre urządzenia mogą wymagać ponownego parowania. Nie usuwaj parowań ani sterowników profilaktycznie.
+
+2. Rozpoznanie urządzeń
+
+Naciśnij Win+R, wpisz devmgmt.msc i Enter, aby otworzyć Menedżer urządzeń. Przejdź Tabem do drzewa, strzałkami wybierz Bluetooth, strzałką w prawo rozwiń gałąź. Zaznacz urządzenie i użyj Alt+Enter, aby otworzyć właściwości. Karta Ogólne pokazuje stan i ewentualny kod błędu; Sterownik — dostawcę i wersję. Karta Szczegóły, właściwości Identyfikatory sprzętu oraz Ścieżka wystąpienia urządzenia, pozwalają rozpoznać konkretny adapter.
+
+Przykładowe identyfikatory modeli adapterów:
+- ASUS USB-BT540: identyfikator sprzętu USB\VID_0B05&PID_1BEF.
+- Wbudowany MediaTek: USB\VID_0489&PID_E110&MI_00.
+
+Microsoft Bluetooth Enumerator, Microsoft Bluetooth LE Enumerator, Yamaha, słuchawki i urządzenia HID nie są drugim fizycznym radiem. Nie wyłączaj ich zamiast adaptera. Nazwy pozycji i układ właściwości zależą od wersji Windows i sterownika. W razie wątpliwości sprawdź identyfikator, nie zgaduj.
+
+3. Używanie ASUS USB-BT540
+
+1) Rozłącz soundbar i zamknij programy korzystające z Bluetooth.
+2) W Menedżerze urządzeń wybierz fizyczny adapter MediaTek. Shift+F10 otwiera menu kontekstowe; wybierz Wyłącz urządzenie i potwierdź. Nie wybieraj Odinstaluj urządzenie.
+3) Podłącz ASUS USB-BT540. Jeśli był ręcznie wyłączony, na właściwej pozycji ASUS wybierz Włącz urządzenie. MediaTek ma pozostać wyłączony.
+4) Otwórz właściwości ASUS: oczekiwany stan to Urządzenie działa poprawnie, bez kodu błędu. Wyłączony MediaTek z kodem 22 jest w tej konfiguracji prawidłowy.
+5) W Ustawieniach Windows → Bluetooth i urządzenia włącz Bluetooth. Skrót: Win+R, wpisz ms-settings:bluetooth i Enter.
+6) W Yamahamie wyszukaj soundbar i połącz się. Kontroler BLE nie wymaga wstępnego parowania jako głośnik audio. Parowanie do odtwarzania dźwięku to osobna czynność w Windows.
+
+4. Powrót do wbudowanego MediaTeka
+
+Rozłącz soundbar. Odłącz ASUS od USB albo wyłącz wyłącznie jego radio w Menedżerze urządzeń. Dopiero potem włącz MediaTek. Sprawdź stan MediaTeka i Bluetooth w Ustawieniach. Nie włączaj obu adapterów naraz. Jeśli później wracasz do ASUS-a, najpierw ponownie wyłącz MediaTek.
+
+5. ASUS nadal pokazuje kod 31 po wyłączeniu MediaTeka
+
+Kod 31 sam w sobie nie dowodzi konfliktu. Sprawdź zdarzenia BTHUSB: komunikat „Obsługiwany jest tylko jeden aktywny adapter Bluetooth” wskazuje na równocześnie aktywne radia. Po wyłączeniu drugiego adaptera USB może wymagać odłączenia i ponownego podłączenia albo ponownego uruchomienia swojej instancji.
+
+Najpierw upewnij się, że drugie radio jest wyłączone. Odłącz i ponownie podłącz ASUS albo wyłącz i włącz tylko ASUS w Menedżerze urządzeń. Nie wyłączaj radia obsługującego jedyną dostępną klawiaturę. Jeżeli błąd pozostaje, odczytaj stan, identyfikator i zdarzenia zamiast wielokrotnie usuwać sterowniki.
+
+Opcja zaawansowana — PowerShell:
+- Sam odczyt, bez zmiany konfiguracji:
+  Get-PnpDevice -Class Bluetooth -PresentOnly | Format-Table Status, FriendlyName, InstanceId -AutoSize
+- Restart jednego adaptera wymaga terminala administratora. W Menedżerze urządzeń skopiuj aktualną Ścieżkę wystąpienia urządzenia ASUS i sprawdź, że zawiera VID_0B05&PID_1BEF. Następnie użyj:
+  pnputil /restart-device "TU_WKLEJ_DOKŁADNĄ_ŚCIEŻKĘ_WYSTĄPIENIA_ASUS"
+  To wzór, nie gotowe polecenie. Nie wpisuj gwiazdki ani identyfikatora MediaTeka. Ścieżka może się zmienić po zmianie portu USB. Restart chwilowo rozłącza urządzenia tego radia.
+
+6. Sterowniki i kontrola działania
+
+Po zmianie adaptera sprawdź, czy aktywne radio działa bez błędu, a drugie pozostaje wyłączone. Następnie wyszukaj SR-C30A w Yamahamie i potwierdź połączenie oraz odczyt stanu. Wyświetlany numer firmware soundbara nie jest numerem sterownika adaptera.
+
+Sterownik pobieraj z oficjalnej strony producenta dla dokładnego modelu adaptera i swojej wersji Windows. Nie zastępuj sterownika Windows 11 gałęzią przeznaczoną dla Windows 10 tylko dlatego, że jej numer wygląda inaczej. Przed aktualizacją sprawdź instrukcję pakietu. Sterownik ASUS nie jest firmware soundbara Yamaha.
+
+7. Źródła producentów
+
+Microsoft — jeden aktywny adapter w stosie Bluetooth Windows:
+https://learn.microsoft.com/en-us/windows-hardware/drivers/bluetooth/bluetooth-faq#how-many-bluetooth-radios-can-windows-support
+
+ASUS — instrukcja zalecająca wyłączenie wbudowanego Bluetooth przed USB-BT540:
+https://dlcdnets.asus.com/pub/ASUS/wireless/USB-BT540/ET25402_USB-BT540_folded_QSG_400x320mm_PRINT.pdf
+
+ASUS — sterowniki dla USB-BT540:
+https://www.asus.com/networking-iot-servers/wireless-adapters/all-series/usb-bt540/helpdesk_download?model2Name=USB-BT540
+
+Ta instrukcja jest osobnym plikiem w folderze projektu, poza aplikacją Yamahama. Otwórz ją w edytorze tekstu, np. Notatniku. Polecenia narzędzi Windows uruchamiasz samodzielnie; aplikacja nie wprowadza zmian konfiguracji adapterów.

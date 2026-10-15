@@ -1,0 +1,86 @@
+Yamahama — sound settings and factory reset of the Yamaha SR-C30A
+Official sources checked: 2 October 2026.
+
+1. Two different operations
+
+Restoring a selected sound profile means changing only the specified sound settings. It is not deleting Bluetooth pairing or fully resetting the device. Full factory initialization is a separate, much broader operation performed on the soundbar.
+
+Opening this guide changes nothing. There is no verified BLE command for full initialization of the SR-C30A. This guide is not a remotely executed reset by Yamahama.
+
+2. Limited sound profile — no guessed factory values
+
+The verified basic control mapping covers STEREO / STANDARD / 3D MOVIE / GAME, Clear Voice, Bass Extension and subwoofer level adjustment. The application's subwoofer reading ranges from -4 to +4; 0 is the middle of that scale, not thereby a confirmed factory value or a measurement in dB.
+
+The reviewed pages of the official SR-C30A manual did not establish explicit factory values for:
+- sound mode;
+- Clear Voice;
+- Bass Extension;
+- subwoofer level;
+- master volume or mute.
+
+The manual describes how these functions work, but this does not establish STANDARD, Clear Voice off, Bass Extension off and subwoofer 0 as factory settings. They must not be labelled as such. Completely neutral sound from that combination is not established either: STANDARD is a surround mode.
+
+In Yamahama Settings, each saved device can have multiple named sound profiles: select a profile from the list, save the current sound under a name, apply the selected profile or delete it. Deliberately choose the sound first, then capture a fresh reading. Profiles are stored with the device in config.json. Overwriting the same name, applying and deleting require confirmation. Connect once does not automatically save a device. Resetting application preferences preserves profiles; removing a saved device removes its profiles. This is not automatic restoration of factory sound settings.
+
+A safely limited operation must preserve power, input, master volume, mute, indicator brightness and pairing. It must not automatically turn on the soundbar, change the source or unmute it. If the device is not on and connected, do not apply the profile blindly. A fresh status reading is needed to confirm the result; an interrupted operation can leave a partially applied profile. Changing sound processing or subwoofer level can change perceived loudness even when master volume is preserved.
+
+Yamaha explicitly documents two other factory values:
+- dynamic range compression, DRC: no compression; this setting applies to Dolby Digital signals;
+- installation-dependent frequency characteristics: installed on a stand, not wall-mounted.
+
+There are no verified BLE commands or readings for these functions in the current mapping. A basic profile does not restore them and is not a complete reset of every sound setting. Do not emulate a remote-control hold with a guessed Bluetooth command. Installation tuning should match the actual installation, even when it differs from the factory setting.
+
+3. Full factory reset — a deliberate action on the device
+
+Warning: Yamaha describes this operation as restoring the soundbar's settings to factory presets, not merely changing its sound. Do not assume that existing settings, master volume, mute or selected input will be preserved. Before proceeding, record the configuration you need and deliberately stop playback at the source to avoid unexpected audio.
+
+Official SR-C30A procedure:
+1) Turn off the soundbar while leaving its power connected — it must be in standby. Dark indicators alone do not prove that it is off: they can also be disabled during operation.
+2) On the soundbar itself, hold volume up, meaning volume +. While holding that control, also hold the soundbar's power button until all indicators flash.
+3) Yamaha shows all five indicators — TV, OPTICAL, BLUETOOTH, ANALOG and SURROUND — flashing as confirmation that initialization is complete.
+
+Use volume + and power on the soundbar, not volume -, input selection or buttons on the remote control. The initialization page does not specify a hold duration in seconds, a flash count or an audible confirmation. Do not replace the flashing condition with an invented duration. This procedure has not been performed on your unit here. If you cannot check the indicators, ask someone to read them rather than guessing the result. If Child Lock prevents panel operation, consult the separate panel-dotykowy.txt guide; do not assume that reset is exempt from the lock.
+
+4. Consequences and reconfiguration
+
+A full reset is not a substitute for a limited sound profile. The manual also documents these factory settings for other functions: HDMI Control enabled, Bluetooth enabled, Bluetooth Standby enabled, Child Lock disabled, DRC with no compression, and stand installation tuning. Default Auto Power Standby depends on the regional model: it is enabled on European models. After a reset, check the settings required for your connection and installation.
+
+The initialization page does not enumerate the effects on stored Bluetooth pairings or on soundbar-to-subwoofer pairing. We do not promise that they are preserved or claim without evidence that they are all erased. If preserving pairing is a requirement, do not use full initialization as a sound-only reset. If connection problems occur afterwards, follow Yamaha's relevant connection instructions. Do not automatically delete Windows pairing or the application's remembered device.
+
+An ordinary restart is a different operation. Yamaha describes it as unplugging the power cords of the soundbar and subwoofer from the AC wall outlets, waiting at least 10 seconds, plugging them back in and turning on the power. This is not the factory initialization described above. Reset is not a firmware-flashing procedure either.
+
+5. Official sources for this exact model
+
+Factory initialization:
+https://manual.yamaha.com/av/22/src30a/en-US/9034212747.html
+Button illustration from that page:
+https://manual.yamaha.com/av/22/src30a/Images/png/27021606694350987__Web.png
+Completion illustration:
+https://manual.yamaha.com/av/22/src30a/Images/png/9007208184768139__en-US__Original.png
+Panel control names:
+https://manual.yamaha.com/av/22/src30a/en-US/9041583243.html
+Sound modes and functions:
+https://manual.yamaha.com/av/22/src30a/en-US/9032872203.html
+Subwoofer:
+https://manual.yamaha.com/av/22/src30a/en-US/9033142667.html
+Clear Voice:
+https://manual.yamaha.com/av/22/src30a/en-US/9033191691.html
+Bass Extension:
+https://manual.yamaha.com/av/22/src30a/en-US/9033245963.html
+Master volume and mute:
+https://manual.yamaha.com/av/22/src30a/en-US/9032697739.html
+DRC:
+https://manual.yamaha.com/av/22/src30a/en-US/9034151051.html
+Installation tuning:
+https://manual.yamaha.com/av/22/src30a/en-US/9045095947.html
+HDMI Control, Bluetooth, Bluetooth Standby, Child Lock and regional Auto Power Standby:
+https://manual.yamaha.com/av/22/src30a/en-US/9033755147.html
+https://manual.yamaha.com/av/22/src30a/en-US/9034098699.html
+https://manual.yamaha.com/av/22/src30a/en-US/9034048523.html
+https://manual.yamaha.com/av/22/src30a/en-US/9033994635.html
+https://manual.yamaha.com/av/22/src30a/en-US/9033808139.html
+Restart versus initialization:
+https://manual.yamaha.com/av/22/src30a/en-US/9035425035.html
+Bluetooth connection and troubleshooting subwoofer pairing:
+https://manual.yamaha.com/av/22/src30a/en-US/9033300619.html
+https://manual.yamaha.com/av/22/src30a/en-US/9091414667.html

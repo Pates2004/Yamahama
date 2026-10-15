@@ -1,0 +1,489 @@
+<Window x:Class="YamahaRemote.Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:YamahaRemote.Windows"
+        xmlns:core="clr-namespace:YamahaRemote.Core;assembly=YamahaRemote.Core"
+        Title="{DynamicResource Window.Title}"
+        Width="1080" Height="900" MinWidth="820" MinHeight="640"
+        FontFamily="{DynamicResource {x:Static SystemFonts.MessageFontFamilyKey}}"
+        FontSize="{DynamicResource {x:Static SystemFonts.MessageFontSizeKey}}"
+        Loaded="OnWindowLoaded" Closing="OnWindowClosing">
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static local:MainWindow.IncreaseVolumeCommand}" Executed="OnIncreaseVolume" CanExecute="CanIncreaseVolume" />
+        <CommandBinding Command="{x:Static local:MainWindow.DecreaseVolumeCommand}" Executed="OnDecreaseVolume" CanExecute="CanDecreaseVolume" />
+        <CommandBinding Command="{x:Static local:MainWindow.IncreaseSubwooferCommand}" Executed="OnIncreaseSubwoofer" CanExecute="CanIncreaseSubwoofer" />
+        <CommandBinding Command="{x:Static local:MainWindow.DecreaseSubwooferCommand}" Executed="OnDecreaseSubwoofer" CanExecute="CanDecreaseSubwoofer" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="Add" Modifiers="Control" Command="{x:Static local:MainWindow.IncreaseVolumeCommand}" />
+        <KeyBinding Key="OemPlus" Modifiers="Control" Command="{x:Static local:MainWindow.IncreaseVolumeCommand}" />
+        <KeyBinding Key="OemPlus" Modifiers="Control+Shift" Command="{x:Static local:MainWindow.IncreaseVolumeCommand}" />
+        <KeyBinding Key="Subtract" Modifiers="Control" Command="{x:Static local:MainWindow.DecreaseVolumeCommand}" />
+        <KeyBinding Key="OemMinus" Modifiers="Control" Command="{x:Static local:MainWindow.DecreaseVolumeCommand}" />
+        <KeyBinding Key="Add" Modifiers="Alt" Command="{x:Static local:MainWindow.IncreaseSubwooferCommand}" />
+        <KeyBinding Key="OemPlus" Modifiers="Alt" Command="{x:Static local:MainWindow.IncreaseSubwooferCommand}" />
+        <KeyBinding Key="OemPlus" Modifiers="Alt+Shift" Command="{x:Static local:MainWindow.IncreaseSubwooferCommand}" />
+        <KeyBinding Key="Subtract" Modifiers="Alt" Command="{x:Static local:MainWindow.DecreaseSubwooferCommand}" />
+        <KeyBinding Key="OemMinus" Modifiers="Alt" Command="{x:Static local:MainWindow.DecreaseSubwooferCommand}" />
+    </Window.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Menu x:Name="MainMenu" Grid.Row="0" IsTabStop="False" KeyboardNavigation.TabNavigation="None" KeyboardNavigation.ControlTabNavigation="None">
+            <MenuItem x:Name="FileMenu" Header="{DynamicResource Menu.File}">
+                <MenuItem x:Name="ConnectOnceMenuItem" Header="{DynamicResource Device.ConnectOnce}" IsEnabled="False"
+                          Click="OnConnectOnce" AutomationProperties.Name="{DynamicResource Device.ConnectOnce}" />
+                <Separator />
+                <MenuItem x:Name="SettingsMenuItem" Header="{DynamicResource Menu.Settings}" Click="OnOpenSettings"
+                          AutomationProperties.Name="{DynamicResource Tabs.SettingsName}" />
+                <Separator />
+                <MenuItem x:Name="ExitMenuItem" Header="{DynamicResource Menu.Exit}" Click="OnExit" AutomationProperties.Name="{DynamicResource Menu.ExitName}" />
+            </MenuItem>
+            <MenuItem x:Name="HelpMenu" Header="{DynamicResource Menu.Help}">
+                <MenuItem x:Name="SoundbarHelpMenuItem" Header="{DynamicResource Menu.SoundbarHelp}" Click="OnAbout"
+                          AutomationProperties.Name="{DynamicResource Tabs.HelpName}" />
+                <MenuItem x:Name="InformationMenuItem" Header="{DynamicResource Menu.DeviceInformation}" Click="OnOpenInformation"
+                          AutomationProperties.Name="{DynamicResource Tabs.InformationName}" />
+                <MenuItem x:Name="FirmwareMenuItem" Header="{DynamicResource Guide.FirmwareTab}" Click="OnOpenFirmware"
+                          AutomationProperties.Name="{DynamicResource Guide.FirmwareTabName}" />
+                <MenuItem x:Name="ManualMenuItem" Header="{DynamicResource Menu.Manual}" Click="OnOpenManual" local:UsageHints.Text="{DynamicResource Menu.ManualHint}" />
+                <Separator />
+                <MenuItem x:Name="ResetSoundButton" Header="{DynamicResource Reset.Sound}" Click="OnResetSound"
+                          AutomationProperties.Name="{DynamicResource Reset.Sound}" />
+                <MenuItem x:Name="FactoryResetGuideButton" Header="{DynamicResource Reset.FactoryGuide}" Click="OnFactoryResetGuide"
+                          AutomationProperties.Name="{DynamicResource Reset.FactoryGuide}" />
+            </MenuItem>
+        </Menu>
+        <TextBlock x:Name="ConnectionSummary" Grid.Row="1" Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus"
+                   Margin="18,12,18,6" TextWrapping="Wrap" KeyboardNavigation.TabIndex="1"
+                   Text="{DynamicResource Connection.Initial}" AutomationProperties.Name="{DynamicResource Connection.StatusName}" />
+        <TabControl x:Name="MainTabs" Grid.Row="2" Margin="12,6" KeyboardNavigation.TabIndex="2">
+            <TabItem x:Name="ControlTab" Header="{DynamicResource Tabs.Control}" AutomationProperties.Name="{DynamicResource Tabs.ControlName}">
+                <ScrollViewer x:Name="ControlsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Focusable="False" Padding="12" KeyboardNavigation.TabNavigation="Continue">
+                    <StackPanel>
+                        <TextBlock x:Name="ReadoutStatus" Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" Text="{DynamicResource Readout.None}" MaxWidth="{Binding ViewportWidth, ElementName=ControlsScrollViewer}" HorizontalAlignment="Left"
+                                   FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8" AutomationProperties.Name="{DynamicResource Readout.StatusName}" />
+                        <TextBlock x:Name="ControlUsageHint" Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Control.Hint}" TextWrapping="Wrap" MaxWidth="{Binding ViewportWidth, ElementName=ControlsScrollViewer}" HorizontalAlignment="Left" Margin="0,0,0,8" />
+                        <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Appearance.RowsHint}" TextWrapping="Wrap" MaxWidth="{Binding ViewportWidth, ElementName=ControlsScrollViewer}" HorizontalAlignment="Left" Margin="0,0,0,8" />
+                        <TextBlock x:Name="AllControlsHiddenMessage" Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" Visibility="Collapsed" Text="{DynamicResource Appearance.AllHidden}" TextWrapping="Wrap" MaxWidth="{Binding ViewportWidth, ElementName=ControlsScrollViewer}" HorizontalAlignment="Left" FontWeight="SemiBold" Margin="0,0,0,8" AutomationProperties.Name="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                        <Grid x:Name="ControlRowsGrid">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="170" />
+                                <ColumnDefinition Width="*" MinWidth="370" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Label x:Name="PowerReadoutLabel" Grid.Row="0" Content="{DynamicResource Control.PowerLabel}" Target="{Binding ElementName=PowerReadout}" />
+                            <TextBox x:Name="PowerReadout" Grid.Row="0" Grid.Column="1" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Readout.PowerName}" />
+                            <TextBlock x:Name="PowerStaticReadout" Grid.Row="0" Grid.ColumnSpan="2"
+                                       Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" TextWrapping="Wrap" Margin="6,8" VerticalAlignment="Center" />
+                            <CheckBox x:Name="PowerToggle" Grid.Row="0" Grid.Column="2" Content="{DynamicResource Control.Power}" IsThreeState="False"
+                                      Margin="8,6" VerticalAlignment="Center" IsEnabled="False" Checked="OnToggleSetting" Unchecked="OnToggleSetting"
+                                      AutomationProperties.Name="{DynamicResource Control.Power}"
+                                      local:UsageHints.Text="{DynamicResource Control.ToggleHint}" />
+                            <Label x:Name="InputReadoutLabel" Grid.Row="1" Content="{DynamicResource Control.CurrentInputLabel}" Target="{Binding ElementName=InputReadout}" />
+                            <TextBox x:Name="InputReadout" Grid.Row="1" Grid.Column="1" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Readout.InputName}" />
+                            <TextBlock x:Name="InputStaticReadout" Grid.Row="1" Grid.ColumnSpan="2"
+                                       Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" TextWrapping="Wrap" Margin="6,8" VerticalAlignment="Center" />
+                            <WrapPanel Grid.Row="1" Grid.Column="2">
+                                <Label Content="{DynamicResource Control.TargetInputLabel}" Target="{Binding ElementName=InputChoice}" />
+                                <ComboBox x:Name="InputChoice" IsEnabled="False" SelectionChanged="OnSettingSelectionChanged" AutomationProperties.Name="{DynamicResource Control.TargetInputName}" local:UsageHints.Text="{DynamicResource Control.SelectionHint}">
+                                    <ComboBoxItem Content="{DynamicResource Input.Tv}" Tag="{x:Static core:SoundbarCommand.InputTv}" />
+                                    <ComboBoxItem Content="{DynamicResource Input.Optical}" Tag="{x:Static core:SoundbarCommand.InputOptical}" />
+                                    <ComboBoxItem Content="{DynamicResource Input.Bluetooth}" Tag="{x:Static core:SoundbarCommand.InputBluetooth}" />
+                                    <ComboBoxItem Content="{DynamicResource Input.Analog}" Tag="{x:Static core:SoundbarCommand.InputAnalog}" />
+                                </ComboBox>
+                                <Button x:Name="ApplyInputButton" Content="{DynamicResource Common.Apply}" Click="OnApplyInput" IsEnabled="False" AutomationProperties.Name="{DynamicResource Control.ApplyInputName}" />
+                            </WrapPanel>
+                            <Label x:Name="VolumeReadoutLabel" Grid.Row="2" Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Control.VolumeLabel}" Target="{Binding ElementName=VolumeReadout}" />
+                            <TextBox x:Name="VolumeReadout" Grid.Row="2" Grid.Column="1" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Readout.VolumeName}" />
+                            <TextBlock x:Name="VolumeStaticReadout" Grid.Row="2" Grid.ColumnSpan="2"
+                                       Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" TextWrapping="Wrap" Margin="6,8" VerticalAlignment="Center" />
+                            <WrapPanel x:Name="VolumeButtons" Grid.Row="2" Grid.Column="2">
+                                <Button x:Name="DecreaseVolumeButton" Content="−" MinWidth="38" Command="{x:Static local:MainWindow.DecreaseVolumeCommand}" AutomationProperties.Name="{DynamicResource Control.DecreaseVolumeName}" local:UsageHints.Text="{DynamicResource Control.DecreaseVolumeHint}" />
+                                <Button x:Name="IncreaseVolumeButton" Content="+" MinWidth="38" Command="{x:Static local:MainWindow.IncreaseVolumeCommand}" AutomationProperties.Name="{DynamicResource Control.IncreaseVolumeName}" local:UsageHints.Text="{DynamicResource Control.IncreaseVolumeHint}" />
+                            </WrapPanel>
+                            <local:ConfirmedSlider x:Name="VolumeSlider" Grid.Row="2" Grid.Column="2" Style="{StaticResource LevelSliderStyle}"
+                                Minimum="0" Maximum="50" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True"
+                                IsMoveToPointEnabled="True" IsEnabled="False" ValueRequested="OnLevelValueRequested"
+                                AutomationProperties.Name="{DynamicResource Levels.Volume}" local:UsageHints.Text="{DynamicResource Levels.SliderHint}" />
+                            <Label x:Name="MuteReadoutLabel" Grid.Row="3" Content="{DynamicResource Control.MuteLabel}" Target="{Binding ElementName=MuteReadout}" />
+                            <TextBox x:Name="MuteReadout" Grid.Row="3" Grid.Column="1" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Readout.MuteName}" />
+                            <TextBlock x:Name="MuteStaticReadout" Grid.Row="3" Grid.ColumnSpan="2"
+                                       Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" TextWrapping="Wrap" Margin="6,8" VerticalAlignment="Center" />
+                            <CheckBox x:Name="MuteToggle" Grid.Row="3" Grid.Column="2" Content="{DynamicResource Control.Mute}" IsThreeState="False"
+                                      Margin="8,6" VerticalAlignment="Center" IsEnabled="False" Checked="OnToggleSetting" Unchecked="OnToggleSetting"
+                                      AutomationProperties.Name="{DynamicResource Control.Mute}"
+                                      local:UsageHints.Text="{DynamicResource Control.ToggleHint}" />
+                            <Label x:Name="SubwooferReadoutLabel" Grid.Row="4" Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Control.SubwooferLabel}" Target="{Binding ElementName=SubwooferReadout}" />
+                            <TextBox x:Name="SubwooferReadout" Grid.Row="4" Grid.Column="1" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Readout.SubwooferName}" />
+                            <TextBlock x:Name="SubwooferStaticReadout" Grid.Row="4" Grid.ColumnSpan="2"
+                                       Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" TextWrapping="Wrap" Margin="6,8" VerticalAlignment="Center" />
+                            <WrapPanel x:Name="SubwooferButtons" Grid.Row="4" Grid.Column="2">
+                                <Button x:Name="DecreaseSubwooferButton" Content="−" MinWidth="38" Command="{x:Static local:MainWindow.DecreaseSubwooferCommand}" AutomationProperties.Name="{DynamicResource Control.DecreaseSubwooferName}" local:UsageHints.Text="{DynamicResource Control.DecreaseSubwooferHint}" />
+                                <Button x:Name="IncreaseSubwooferButton" Content="+" MinWidth="38" Command="{x:Static local:MainWindow.IncreaseSubwooferCommand}" AutomationProperties.Name="{DynamicResource Control.IncreaseSubwooferName}" local:UsageHints.Text="{DynamicResource Control.IncreaseSubwooferHint}" />
+                            </WrapPanel>
+                            <local:ConfirmedSlider x:Name="SubwooferSlider" Grid.Row="4" Grid.Column="2" Style="{StaticResource LevelSliderStyle}"
+                                Minimum="-4" Maximum="4" SmallChange="1" LargeChange="1" TickFrequency="1" IsSnapToTickEnabled="True"
+                                IsMoveToPointEnabled="True" IsEnabled="False" ValueRequested="OnLevelValueRequested"
+                                AutomationProperties.Name="{DynamicResource Levels.Subwoofer}" local:UsageHints.Text="{DynamicResource Levels.SliderHint}" />
+                            <TextBlock x:Name="SoundSectionHeading" Grid.Row="5" Grid.ColumnSpan="3" Text="{DynamicResource Control.SoundHeading}" Style="{StaticResource SectionHeadingStyle}" />
+                            <Label x:Name="ModeReadoutLabel" Grid.Row="6" Content="{DynamicResource Control.ModeLabel}" Target="{Binding ElementName=ModeReadout}" />
+                            <TextBox x:Name="ModeReadout" Grid.Row="6" Grid.Column="1" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Readout.ModeName}" />
+                            <TextBlock x:Name="ModeStaticReadout" Grid.Row="6" Grid.ColumnSpan="2"
+                                       Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" TextWrapping="Wrap" Margin="6,8" VerticalAlignment="Center" />
+                            <WrapPanel Grid.Row="6" Grid.Column="2">
+                                <Label Content="{DynamicResource Control.TargetModeLabel}" Target="{Binding ElementName=ModeChoice}" />
+                                <ComboBox x:Name="ModeChoice" IsEnabled="False" SelectionChanged="OnSettingSelectionChanged" AutomationProperties.Name="{DynamicResource Control.TargetModeName}" local:UsageHints.Text="{DynamicResource Control.SelectionHint}">
+                                    <ComboBoxItem Content="{DynamicResource Mode.StereoChoice}" Tag="{x:Static core:SoundbarCommand.Stereo}" />
+                                    <ComboBoxItem Content="{DynamicResource Mode.StandardChoice}" Tag="{x:Static core:SoundbarCommand.Standard}" />
+                                    <ComboBoxItem Content="{DynamicResource Mode.Movie3D}" Tag="{x:Static core:SoundbarCommand.Movie3D}" />
+                                    <ComboBoxItem Content="{DynamicResource Mode.GameChoice}" Tag="{x:Static core:SoundbarCommand.Game}" />
+                                </ComboBox>
+                                <Button x:Name="ApplyModeButton" Content="{DynamicResource Common.Apply}" Click="OnApplyMode" IsEnabled="False" AutomationProperties.Name="{DynamicResource Control.ApplyModeName}" />
+                            </WrapPanel>
+                            <Label x:Name="ClearVoiceReadoutLabel" Grid.Row="7" Content="{DynamicResource Control.ClearVoiceLabel}" Target="{Binding ElementName=ClearVoiceReadout}" />
+                            <TextBox x:Name="ClearVoiceReadout" Grid.Row="7" Grid.Column="1" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Readout.ClearVoiceName}" />
+                            <TextBlock x:Name="ClearVoiceStaticReadout" Grid.Row="7" Grid.ColumnSpan="2"
+                                       Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" TextWrapping="Wrap" Margin="6,8" VerticalAlignment="Center" />
+                            <CheckBox x:Name="ClearVoiceToggle" Grid.Row="7" Grid.Column="2" Content="{DynamicResource Control.ClearVoice}" IsThreeState="False"
+                                      Margin="8,6" VerticalAlignment="Center" IsEnabled="False" Checked="OnToggleSetting" Unchecked="OnToggleSetting"
+                                      AutomationProperties.Name="{DynamicResource Control.ClearVoice}"
+                                      local:UsageHints.Text="{DynamicResource Control.ToggleHint}" />
+                            <Label x:Name="BassReadoutLabel" Grid.Row="8" Content="{DynamicResource Control.BassExtensionLabel}" Target="{Binding ElementName=BassReadout}" />
+                            <TextBox x:Name="BassReadout" Grid.Row="8" Grid.Column="1" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Readout.BassExtensionName}" />
+                            <TextBlock x:Name="BassStaticReadout" Grid.Row="8" Grid.ColumnSpan="2"
+                                       Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" TextWrapping="Wrap" Margin="6,8" VerticalAlignment="Center" />
+                            <CheckBox x:Name="BassToggle" Grid.Row="8" Grid.Column="2" Content="{DynamicResource Control.BassExtension}" IsThreeState="False"
+                                      Margin="8,6" VerticalAlignment="Center" IsEnabled="False" Checked="OnToggleSetting" Unchecked="OnToggleSetting"
+                                      AutomationProperties.Name="{DynamicResource Control.BassExtension}"
+                                      local:UsageHints.Text="{DynamicResource Control.ToggleHint}" />
+                            <Label x:Name="BrightnessReadoutLabel" Grid.Row="9" Content="{DynamicResource Control.BrightnessLabel}" Target="{Binding ElementName=BrightnessReadout}" />
+                            <TextBox x:Name="BrightnessReadout" Grid.Row="9" Grid.Column="1" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Readout.BrightnessName}" />
+                            <TextBlock x:Name="BrightnessStaticReadout" Grid.Row="9" Grid.ColumnSpan="2"
+                                       Style="{StaticResource FocusableReadoutStyle}" GotKeyboardFocus="OnReadoutFocus" TextWrapping="Wrap" Margin="6,8" VerticalAlignment="Center" />
+                            <WrapPanel Grid.Row="9" Grid.Column="2">
+                                <Label Content="{DynamicResource Control.TargetBrightnessLabel}" Target="{Binding ElementName=BrightnessChoice}" />
+                                <ComboBox x:Name="BrightnessChoice" IsEnabled="False" SelectionChanged="OnSettingSelectionChanged" AutomationProperties.Name="{DynamicResource Control.TargetBrightnessName}" local:UsageHints.Text="{DynamicResource Control.SelectionHint}">
+                                    <ComboBoxItem Content="{DynamicResource Brightness.Bright}" Tag="{x:Static core:SoundbarCommand.IndicatorsBright}" />
+                                    <ComboBoxItem Content="{DynamicResource Brightness.Dim}" Tag="{x:Static core:SoundbarCommand.IndicatorsDim}" />
+                                    <ComboBoxItem Content="{DynamicResource Brightness.Off}" Tag="{x:Static core:SoundbarCommand.IndicatorsOff}" />
+                                </ComboBox>
+                                <Button x:Name="ApplyBrightnessButton" Content="{DynamicResource Common.Apply}" Click="OnApplyBrightness" IsEnabled="False" AutomationProperties.Name="{DynamicResource Control.ApplyBrightnessName}" />
+                            </WrapPanel>
+                        </Grid>
+                        <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Control.ShortcutsHint}" TextWrapping="Wrap" Margin="0,12,0,0" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem x:Name="DevicesTab" Header="{DynamicResource Tabs.Devices}" AutomationProperties.Name="{DynamicResource Tabs.DevicesName}">
+                <ScrollViewer x:Name="DevicesScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                              Focusable="False" Padding="12" KeyboardNavigation.TabNavigation="Continue">
+                    <GroupBox Header="{DynamicResource Connection.Heading}" Padding="10">
+                        <StackPanel>
+                            <Label Content="{DynamicResource Device.SavedList}" Target="{Binding ElementName=SavedDevicesList}" />
+                            <ListBox x:Name="SavedDevicesList" MinHeight="90" MaxHeight="120" DisplayMemberPath="DisplayName" Style="{StaticResource DeviceListStyle}"
+                                     SelectionChanged="OnSavedDeviceSelectionChanged" GotKeyboardFocus="OnDeviceListKeyboardFocus" ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                     AutomationProperties.Name="{DynamicResource Device.SavedList}" local:UsageHints.Text="{DynamicResource Device.SavedListHint}" />
+                            <TextBlock x:Name="EmptySavedMessage" Text="{DynamicResource Device.EmptySaved}" TextWrapping="Wrap" />
+                            <Label Content="{DynamicResource Device.DiscoveredList}" Target="{Binding ElementName=DevicesList}" Margin="0,12,0,0" />
+                            <ListBox x:Name="DevicesList" MinHeight="90" MaxHeight="120" DisplayMemberPath="DisplayName" Style="{StaticResource DeviceListStyle}"
+                                     SelectionChanged="OnDeviceSelectionChanged" GotKeyboardFocus="OnDeviceListKeyboardFocus" ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                     AutomationProperties.Name="{DynamicResource Connection.DevicesName}"
+                                     local:UsageHints.Text="{DynamicResource Connection.DevicesHint}" />
+                            <WrapPanel Margin="0,8,0,0">
+                                <Button x:Name="SearchButton" Content="{DynamicResource Connection.Search}" Click="OnSearch" AutomationProperties.Name="{DynamicResource Connection.SearchName}" local:UsageHints.Text="{DynamicResource Connection.SearchHint}" />
+                                <Button x:Name="ConnectButton" Content="{DynamicResource Device.ConnectAndSave}" Click="OnConnect" IsEnabled="False" AutomationProperties.Name="{DynamicResource Device.ConnectAndSave}" />
+                                <Button x:Name="ConnectOnceButton" Content="{DynamicResource Device.ConnectOnce}" Click="OnConnectOnce"
+                                        IsEnabled="{Binding IsEnabled, ElementName=ConnectButton}" AutomationProperties.Name="{DynamicResource Device.ConnectOnce}" />
+                                <Button x:Name="AddDeviceButton" Content="{DynamicResource Device.Add}" Click="OnAddDevice" IsEnabled="False"
+                                        AutomationProperties.Name="{DynamicResource Device.Add}" local:UsageHints.Text="{DynamicResource Device.AddHint}" />
+                                <Button x:Name="RemoveSavedDeviceButton" Content="{DynamicResource Device.Remove}" Click="OnRemoveSavedDevice" IsEnabled="False"
+                                        AutomationProperties.Name="{DynamicResource Device.Remove}" local:UsageHints.Text="{DynamicResource Device.RemoveHint}" />
+                                <Button x:Name="DisconnectButton" Content="{DynamicResource Connection.Disconnect}" Click="OnDisconnect" IsEnabled="False" AutomationProperties.Name="{DynamicResource Connection.DisconnectName}" />
+                                <Button x:Name="ForgetButton" Content="{DynamicResource Connection.Forget}" Click="OnForgetDevice" IsEnabled="False" AutomationProperties.Name="{DynamicResource Connection.ForgetName}" local:UsageHints.Text="{DynamicResource Connection.ForgetHint}" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </GroupBox>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem x:Name="InformationTab" Header="{DynamicResource Tabs.Information}" AutomationProperties.Name="{DynamicResource Tabs.InformationName}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False" Padding="12">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Information.Hint}" TextWrapping="Wrap" Margin="0,0,0,12" />
+                        <Label Content="{DynamicResource Information.StatusLabel}" Target="{Binding ElementName=InformationStatus}" />
+                        <TextBox x:Name="InformationStatus" Style="{StaticResource ReadoutStyle}" TextWrapping="Wrap" AutomationProperties.Name="{DynamicResource Information.StatusName}" />
+                        <Label Content="{DynamicResource Information.DeviceLabel}" Target="{Binding ElementName=DeviceReadout}" />
+                        <TextBox x:Name="DeviceReadout" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Information.DeviceName}" />
+                        <Label Content="{DynamicResource Information.ModelLabel}" Target="{Binding ElementName=ModelReadout}" />
+                        <TextBox x:Name="ModelReadout" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Information.ModelName}" />
+                        <Label Content="{DynamicResource Information.FirmwareLabel}" Target="{Binding ElementName=FirmwareReadout}" />
+                        <TextBox x:Name="FirmwareReadout" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Information.FirmwareName}" />
+                        <Label Content="{DynamicResource Information.LastResponseLabel}" Target="{Binding ElementName=LastResponseReadout}" />
+                        <TextBox x:Name="LastResponseReadout" Style="{StaticResource ReadoutStyle}" AutomationProperties.Name="{DynamicResource Information.LastResponseName}" local:UsageHints.Text="{DynamicResource Information.LastResponseHint}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem x:Name="FirmwareHelpTab" Header="{DynamicResource Guide.FirmwareTab}" AutomationProperties.Name="{DynamicResource Guide.FirmwareTabName}">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Label Content="{DynamicResource Guide.FirmwareDeviceLabel}" Target="{Binding ElementName=FirmwareDeviceReadout}" />
+                    <TextBox x:Name="FirmwareDeviceReadout" Grid.Row="1" Style="{StaticResource ReadoutStyle}" TextWrapping="Wrap"
+                             AutomationProperties.Name="{DynamicResource Guide.FirmwareDeviceName}"
+                             local:UsageHints.Text="{DynamicResource Guide.FirmwareDeviceHint}" />
+                    <Label Grid.Row="2" Content="{DynamicResource Guide.FirmwareLabel}" Target="{Binding ElementName=FirmwareGuideReadout}" />
+                    <TextBox x:Name="FirmwareGuideReadout" Grid.Row="3" Style="{StaticResource ReadoutStyle}" VerticalAlignment="Stretch" VerticalContentAlignment="Top"
+                             TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"
+                             AutomationProperties.Name="{DynamicResource Guide.FirmwareName}"
+                             local:UsageHints.Text="{DynamicResource Guide.FirmwareHint}" />
+                    <WrapPanel Grid.Row="4">
+                        <Button x:Name="FirmwareDownloadsButton" Content="{DynamicResource Guide.CopyDownloads}" Click="OnCopySupportAddress"
+                                AutomationProperties.Name="{DynamicResource Guide.CopyDownloadsName}"
+                                local:UsageHints.Text="{DynamicResource Guide.CopyDownloadsHint}" />
+                        <Button x:Name="YamahaSupportButton" Content="{DynamicResource Guide.CopySupport}" Click="OnCopySupportAddress"
+                                AutomationProperties.Name="{DynamicResource Guide.CopySupportName}"
+                                local:UsageHints.Text="{DynamicResource Guide.CopySupportHint}" />
+                    </WrapPanel>
+                </Grid>
+            </TabItem>
+            <TabItem x:Name="SettingsTab" Header="{DynamicResource Tabs.Settings}" AutomationProperties.Name="{DynamicResource Tabs.SettingsName}">
+                <DockPanel>
+                    <TabControl x:Name="SettingsTabs">
+                        <TabItem x:Name="AppearanceSettingsTab" Header="{DynamicResource Settings.AppearanceTab}" AutomationProperties.Name="{DynamicResource Settings.AppearanceTab}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" Padding="12">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Settings.TransactionHint}" TextWrapping="Wrap" Margin="3,8" />
+                                    <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Settings.Language}" Target="{Binding ElementName=SettingsLanguageChoice}" />
+                                    <ComboBox x:Name="SettingsLanguageChoice" SelectionChanged="OnSettingsLanguageChanged" AutomationProperties.Name="{DynamicResource Settings.Language}">
+                                        <ComboBoxItem Content="Polski" Tag="pl" />
+                                        <ComboBoxItem Content="English" Tag="en" />
+                                    </ComboBox>
+                                    <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Settings.Theme}" Target="{Binding ElementName=SettingsThemeChoice}" />
+                                    <ComboBox x:Name="SettingsThemeChoice" SelectionChanged="OnSettingsThemeChanged" AutomationProperties.Name="{DynamicResource Settings.Theme}">
+                                        <ComboBoxItem Content="{DynamicResource Theme.Light}" Tag="Light" />
+                                        <ComboBoxItem Content="{DynamicResource Theme.Dark}" Tag="Dark" />
+                                        <ComboBoxItem Content="{DynamicResource Theme.System}" Tag="System" />
+                                    </ComboBox>
+                                    <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Settings.TextScale}" Target="{Binding ElementName=SettingsTextScaleChoice}" />
+                                    <ComboBox x:Name="SettingsTextScaleChoice" DisplayMemberPath="DisplayName" SelectedValuePath="Value"
+                                              SelectionChanged="OnSettingsTextScaleChanged" AutomationProperties.Name="{DynamicResource Settings.TextScale}" />
+                                    <Button x:Name="ResetAppearanceSettingsButton" Content="{DynamicResource Settings.ResetTab}" HorizontalAlignment="Left" Margin="3,12,3,3"
+                                            Click="OnResetSettingsTab" Tag="Appearance" AutomationProperties.Name="{DynamicResource Settings.ResetTab}" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem x:Name="MainScreenSettingsTab" Header="{DynamicResource Settings.MainScreenTab}" AutomationProperties.Name="{DynamicResource Settings.MainScreenTab}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" Padding="12">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionHeadingStyle}" Text="{DynamicResource Settings.RowsHeading}" />
+                                    <CheckBox x:Name="ShowPowerRowItem" Style="{StaticResource WrappingCheckBoxStyle}" IsChecked="True" Margin="3,6"
+                                              Content="{DynamicResource Menu.ShowPower}" AutomationProperties.Name="{DynamicResource Menu.ShowPower}"
+                                              Checked="OnControlRowVisibilitySelected" Unchecked="OnControlRowVisibilitySelected" />
+                                    <CheckBox x:Name="ShowInputRowItem" Style="{StaticResource WrappingCheckBoxStyle}" IsChecked="True" Margin="3,6"
+                                              Content="{DynamicResource Menu.ShowInput}" AutomationProperties.Name="{DynamicResource Menu.ShowInput}"
+                                              Checked="OnControlRowVisibilitySelected" Unchecked="OnControlRowVisibilitySelected" />
+                                    <CheckBox x:Name="ShowVolumeRowItem" Style="{StaticResource WrappingCheckBoxStyle}" IsChecked="True" Margin="3,6"
+                                              Content="{DynamicResource Menu.ShowVolume}" AutomationProperties.Name="{DynamicResource Menu.ShowVolume}"
+                                              Checked="OnControlRowVisibilitySelected" Unchecked="OnControlRowVisibilitySelected" />
+                                    <CheckBox x:Name="ShowMuteRowItem" Style="{StaticResource WrappingCheckBoxStyle}" IsChecked="True" Margin="3,6"
+                                              Content="{DynamicResource Menu.ShowMute}" AutomationProperties.Name="{DynamicResource Menu.ShowMute}"
+                                              Checked="OnControlRowVisibilitySelected" Unchecked="OnControlRowVisibilitySelected" />
+                                    <CheckBox x:Name="ShowSubwooferRowItem" Style="{StaticResource WrappingCheckBoxStyle}" IsChecked="True" Margin="3,6"
+                                              Content="{DynamicResource Menu.ShowSubwoofer}" AutomationProperties.Name="{DynamicResource Menu.ShowSubwoofer}"
+                                              Checked="OnControlRowVisibilitySelected" Unchecked="OnControlRowVisibilitySelected" />
+                                    <CheckBox x:Name="ShowSoundModeRowItem" Style="{StaticResource WrappingCheckBoxStyle}" IsChecked="True" Margin="3,6"
+                                              Content="{DynamicResource Menu.ShowSoundMode}" AutomationProperties.Name="{DynamicResource Menu.ShowSoundMode}"
+                                              Checked="OnControlRowVisibilitySelected" Unchecked="OnControlRowVisibilitySelected" />
+                                    <CheckBox x:Name="ShowClearVoiceRowItem" Style="{StaticResource WrappingCheckBoxStyle}" IsChecked="True" Margin="3,6"
+                                              Content="{DynamicResource Menu.ShowClearVoice}" AutomationProperties.Name="{DynamicResource Menu.ShowClearVoice}"
+                                              Checked="OnControlRowVisibilitySelected" Unchecked="OnControlRowVisibilitySelected" />
+                                    <CheckBox x:Name="ShowBassRowItem" Style="{StaticResource WrappingCheckBoxStyle}" IsChecked="True" Margin="3,6"
+                                              Content="{DynamicResource Menu.ShowBassExtension}" AutomationProperties.Name="{DynamicResource Menu.ShowBassExtension}"
+                                              Checked="OnControlRowVisibilitySelected" Unchecked="OnControlRowVisibilitySelected" />
+                                    <CheckBox x:Name="ShowBrightnessRowItem" Style="{StaticResource WrappingCheckBoxStyle}" IsChecked="True" Margin="3,6"
+                                              Content="{DynamicResource Menu.ShowBrightness}" AutomationProperties.Name="{DynamicResource Menu.ShowBrightness}"
+                                              Checked="OnControlRowVisibilitySelected" Unchecked="OnControlRowVisibilitySelected" />
+                                    <Button x:Name="ResetMainScreenSettingsButton" Content="{DynamicResource Settings.ResetTab}" HorizontalAlignment="Left" Margin="3,12,3,3"
+                                            Click="OnResetSettingsTab" Tag="MainScreen" AutomationProperties.Name="{DynamicResource Settings.ResetTab}" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem x:Name="ControlsSettingsTab" Header="{DynamicResource Settings.ControlsTab}" AutomationProperties.Name="{DynamicResource Settings.ControlsTab}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" Padding="12">
+                                <StackPanel>
+                                    <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Levels.VolumeMode}" Target="{Binding ElementName=VolumeControlModeChoice}" />
+                                    <ComboBox x:Name="VolumeControlModeChoice" SelectionChanged="OnLevelControlModeChanged" AutomationProperties.Name="{DynamicResource Levels.VolumeMode}">
+                                        <ComboBoxItem Content="{DynamicResource Levels.Buttons}" Tag="{x:Static local:LevelControlMode.Buttons}" />
+                                        <ComboBoxItem Content="{DynamicResource Levels.Slider}" Tag="{x:Static local:LevelControlMode.Slider}" />
+                                    </ComboBox>
+                                    <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Levels.SubwooferMode}" Target="{Binding ElementName=SubwooferControlModeChoice}" />
+                                    <ComboBox x:Name="SubwooferControlModeChoice" SelectionChanged="OnLevelControlModeChanged" AutomationProperties.Name="{DynamicResource Levels.SubwooferMode}">
+                                        <ComboBoxItem Content="{DynamicResource Levels.Buttons}" Tag="{x:Static local:LevelControlMode.Buttons}" />
+                                        <ComboBoxItem Content="{DynamicResource Levels.Slider}" Tag="{x:Static local:LevelControlMode.Slider}" />
+                                    </ComboBox>
+                                    <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Levels.Explanation}" TextWrapping="Wrap" Margin="3,8" />
+                                    <CheckBox x:Name="AutoApplySelectionsCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Settings.AutoApply}" IsChecked="True" Margin="3,10" Checked="OnBehaviorSettingsChanged" Unchecked="OnBehaviorSettingsChanged"
+                                              AutomationProperties.Name="{DynamicResource Settings.AutoApplyName}"
+                                              local:UsageHints.Text="{DynamicResource Settings.AutoApplyHint}" />
+                                    <CheckBox x:Name="ShowHintsCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Settings.ShowHints}" IsChecked="True" Margin="3,10" Checked="OnBehaviorSettingsChanged" Unchecked="OnBehaviorSettingsChanged"
+                                              AutomationProperties.Name="{DynamicResource Settings.ShowHintsName}"
+                                              local:UsageHints.Text="{DynamicResource Settings.ShowHintsHint}" />
+                                    <CheckBox x:Name="ShowOperationMessagesCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Feedback.ShowOperations}" Margin="3,8"
+                                              Checked="OnBehaviorSettingsChanged" Unchecked="OnBehaviorSettingsChanged" AutomationProperties.Name="{DynamicResource Feedback.ShowOperations}" />
+                                    <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Feedback.DisplayModeName}" Target="{Binding ElementName=ValueDisplayModeChoice}" />
+                                    <ComboBox x:Name="ValueDisplayModeChoice" SelectionChanged="OnValueDisplayModeChanged" AutomationProperties.Name="{DynamicResource Feedback.DisplayModeName}">
+                                        <ComboBoxItem Content="{DynamicResource Feedback.ReadOnlyFields}" Tag="{x:Static local:ValueDisplayMode.ReadOnlyFields}" />
+                                        <ComboBoxItem Content="{DynamicResource Feedback.StaticText}" Tag="{x:Static local:ValueDisplayMode.StaticText}" />
+                                        <ComboBoxItem Content="{DynamicResource Feedback.NoValues}" Tag="{x:Static local:ValueDisplayMode.None}" />
+                                    </ComboBox>
+                                    <CheckBox x:Name="AnnounceStateChangesCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Feedback.AnnounceChanges}" Margin="3,8"
+                                              Checked="OnBehaviorSettingsChanged" Unchecked="OnBehaviorSettingsChanged" AutomationProperties.Name="{DynamicResource Feedback.AnnounceChanges}" />
+                                    <Button x:Name="ResetControlsSettingsButton" Content="{DynamicResource Settings.ResetTab}" HorizontalAlignment="Left" Margin="3,12,3,3"
+                                            Click="OnResetSettingsTab" Tag="Controls" AutomationProperties.Name="{DynamicResource Settings.ResetTab}" />
+                                    <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Feedback.Explanation}" TextWrapping="Wrap" Margin="3,8" />
+                                    <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Settings.AutoApplyExplanation}" TextWrapping="Wrap" Margin="3,8" />
+                                    <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Settings.HintsExplanation}" TextWrapping="Wrap" Margin="3,8" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem x:Name="StartupSettingsTab" Header="{DynamicResource Settings.StartupTab}" AutomationProperties.Name="{DynamicResource Settings.StartupTab}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" Padding="12">
+                                <StackPanel>
+                                    <GroupBox x:Name="StartupSettingsGroup" Header="{DynamicResource Startup.Heading}" Margin="0,12,0,6" Padding="10">
+                                        <StackPanel>
+                                            <CheckBox x:Name="StartWithWindowsCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Margin="3,10"
+                                                      Content="{DynamicResource Startup.Windows}" AutomationProperties.Name="{DynamicResource Startup.Windows}"
+                                                      local:UsageHints.Text="{DynamicResource Startup.WindowsHint}" Checked="OnStartWithWindowsChanged" Unchecked="OnStartWithWindowsChanged" />
+                                            <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Startup.Device}" Target="{Binding ElementName=StartupDeviceChoice}" />
+                                            <ComboBox x:Name="StartupDeviceChoice" DisplayMemberPath="DisplayName" SelectionChanged="OnStartupDeviceChanged"
+                                                      AutomationProperties.Name="{DynamicResource Startup.Device}" local:UsageHints.Text="{DynamicResource Startup.DeviceHint}" />
+                                            <CheckBox x:Name="AutoConnectAtStartupCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Margin="3,10"
+                                                      Content="{DynamicResource Startup.AutoConnect}" AutomationProperties.Name="{DynamicResource Startup.AutoConnect}"
+                                                      local:UsageHints.Text="{DynamicResource Startup.AutoConnectHint}" Checked="OnAutoConnectAtStartupChanged" Unchecked="OnAutoConnectAtStartupChanged" />
+                                            <CheckBox x:Name="PowerOnAtStartupCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Margin="3,10"
+                                                      Content="{DynamicResource Startup.PowerOn}" AutomationProperties.Name="{DynamicResource Startup.PowerOn}"
+                                                      Checked="OnPowerOnAtStartupChanged" Unchecked="OnPowerOnAtStartupChanged" />
+                                        </StackPanel>
+                                    </GroupBox>
+                                    <GroupBox x:Name="PowerSettingsGroup" Header="{DynamicResource Settings.PowerHeading}" Margin="0,6" Padding="10">
+                                        <StackPanel>
+                                            <CheckBox x:Name="KeepPoweredOnCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Margin="3,10"
+                                                      Content="{DynamicResource PowerProtection.Enable}" AutomationProperties.Name="{DynamicResource PowerProtection.Enable}"
+                                                      local:UsageHints.Text="{DynamicResource PowerProtection.Hint}"
+                                                      Checked="OnKeepPoweredOnChanged" Unchecked="OnKeepPoweredOnChanged" />
+                                            <TextBox Style="{StaticResource UsageHintReadoutStyle}" TextWrapping="Wrap"
+                                                     Text="{DynamicResource PowerProtection.Hint}" AutomationProperties.Name="{DynamicResource PowerProtection.Enable}" />
+                                        </StackPanel>
+                                    </GroupBox>
+                                    <TextBox x:Name="DeviceMemoryHint" Style="{StaticResource UsageHintReadoutStyle}" TextWrapping="Wrap" Margin="3,12" AutomationProperties.Name="{DynamicResource Settings.RememberingName}"
+                                             Text="{DynamicResource Settings.Remembering}" />
+                                    <Button x:Name="ResetStartupSettingsButton" Content="{DynamicResource Settings.ResetTab}" HorizontalAlignment="Left" Margin="3,12,3,3"
+                                            Click="OnResetSettingsTab" Tag="Startup" AutomationProperties.Name="{DynamicResource Settings.ResetTab}" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem x:Name="ClosingSettingsTab" Header="{DynamicResource Settings.ClosingTab}" AutomationProperties.Name="{DynamicResource Settings.ClosingTab}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" Padding="12">
+                                <StackPanel>
+                                    <CheckBox x:Name="PowerOffOnExitCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Margin="3,10"
+                                              Content="{DynamicResource Shutdown.PowerOffOption}" AutomationProperties.Name="{DynamicResource Shutdown.PowerOffOption}"
+                                              local:UsageHints.Text="{DynamicResource Shutdown.PowerOffHint}"
+                                              Checked="OnPowerOffOnExitChanged" Unchecked="OnPowerOffOnExitChanged" />
+                                    <CheckBox x:Name="CloseToTrayCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Settings.CloseToTray}" Margin="3,10"
+                                              Checked="OnCloseToTrayChanged" Unchecked="OnCloseToTrayChanged"
+                                              AutomationProperties.Name="{DynamicResource Settings.CloseToTray}" local:UsageHints.Text="{DynamicResource Settings.CloseToTrayHint}" />
+                                    <CheckBox x:Name="ConfirmExitCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Settings.ConfirmExit}" Margin="3,10"
+                                              Checked="OnConfirmExitChanged" Unchecked="OnConfirmExitChanged"
+                                              AutomationProperties.Name="{DynamicResource Settings.ConfirmExit}" local:UsageHints.Text="{DynamicResource Settings.ConfirmExitHint}" />
+                                    <Button x:Name="ResetClosingSettingsButton" Content="{DynamicResource Settings.ResetTab}" HorizontalAlignment="Left" Margin="3,12,3,3"
+                                            Click="OnResetSettingsTab" Tag="Closing" AutomationProperties.Name="{DynamicResource Settings.ResetTab}" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem x:Name="ProfilesSettingsTab" Header="{DynamicResource Settings.ProfilesTab}" AutomationProperties.Name="{DynamicResource Settings.ProfilesTab}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" Padding="12">
+                                <StackPanel>
+                                    <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Profile.Heading}" Target="{Binding ElementName=SoundProfilesList}" />
+                                    <ListBox x:Name="SoundProfilesList" Style="{StaticResource DeviceListStyle}" MinHeight="100" MaxHeight="240" Margin="3"
+                                             DisplayMemberPath="Name" SelectionMode="Single" SelectionChanged="OnSoundProfileSelectionChanged" GotKeyboardFocus="OnDeviceListKeyboardFocus"
+                                             AutomationProperties.Name="{DynamicResource Profile.Heading}" />
+                                    <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Profile.Name}" Target="{Binding ElementName=SoundProfileNameInput}" />
+                                    <TextBox x:Name="SoundProfileNameInput" MinHeight="30" Margin="3" Padding="6,5"
+                                             AutomationProperties.Name="{DynamicResource Profile.Name}" />
+                                    <WrapPanel>
+                                        <Button x:Name="SaveSoundProfileButton" Content="{DynamicResource Profile.Save}" Click="OnSaveSoundProfile"
+                                                AutomationProperties.Name="{DynamicResource Profile.Save}" />
+                                        <Button x:Name="ApplySoundProfileButton" Content="{DynamicResource Profile.Apply}" Click="OnApplySoundProfile"
+                                                AutomationProperties.Name="{DynamicResource Profile.Apply}" />
+                                        <Button x:Name="DeleteSoundProfileButton" Content="{DynamicResource Profile.Delete}" Click="OnDeleteSoundProfile"
+                                                AutomationProperties.Name="{DynamicResource Profile.Delete}" />
+                                    </WrapPanel>
+                                    <TextBlock x:Name="SoundProfileHint" Text="{DynamicResource Profile.Hint}" TextWrapping="Wrap" Style="{StaticResource UsageHintStyle}" />
+                                    <Button x:Name="ResetApplicationButton" Content="{DynamicResource Reset.Application}" HorizontalAlignment="Left" Margin="3,12,3,3"
+                                            Click="OnResetApplication" AutomationProperties.Name="{DynamicResource Reset.Application}" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
+                </DockPanel>
+            </TabItem>
+            <TabItem x:Name="HelpTab" Header="{DynamicResource Tabs.Help}" AutomationProperties.Name="{DynamicResource Tabs.HelpName}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False" Padding="12">
+                    <StackPanel>
+                        <Label Content="{DynamicResource Help.Label}" Target="{Binding ElementName=HelpReadout}" />
+                        <TextBox x:Name="HelpReadout" IsReadOnly="True" IsReadOnlyCaretVisible="True" TextWrapping="Wrap" BorderThickness="0" Padding="6"
+                                 AutomationProperties.Name="{DynamicResource Help.Name}"
+                                 local:UsageHints.Text="{DynamicResource Help.Hint}"
+                                 Text="{DynamicResource Help.Overview}" />
+                        <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource Startup.SafetyName}" Target="{Binding ElementName=StartupSafetyNotice}" />
+                        <TextBox x:Name="StartupSafetyNotice" Style="{StaticResource ReadoutStyle}" TextWrapping="Wrap"
+                                 Text="{DynamicResource Startup.Safety}" AutomationProperties.Name="{DynamicResource Startup.SafetyName}" />
+                        <Label Style="{StaticResource WrappingReadoutLabelStyle}" Content="{DynamicResource PowerProtection.SafetyName}" Target="{Binding ElementName=PowerProtectionSafetyNotice}" />
+                        <TextBox x:Name="PowerProtectionSafetyNotice" Style="{StaticResource ReadoutStyle}" TextWrapping="Wrap"
+                                 Text="{DynamicResource PowerProtection.Safety}" AutomationProperties.Name="{DynamicResource PowerProtection.SafetyName}" />
+                        <Button Content="{DynamicResource Help.OpenManual}" HorizontalAlignment="Left" Click="OnOpenManual"
+                                AutomationProperties.Name="{DynamicResource Help.OpenManualName}" local:UsageHints.Text="{DynamicResource Help.OpenManualHint}" />
+                        <Label Content="{DynamicResource Guide.TouchPanelLabel}" Target="{Binding ElementName=TouchPanelGuideReadout}" />
+                        <TextBox x:Name="TouchPanelGuideReadout" Style="{StaticResource ReadoutStyle}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MaxHeight="340"
+                                 AutomationProperties.Name="{DynamicResource Guide.TouchPanelName}"
+                                 local:UsageHints.Text="{DynamicResource Guide.TouchPanelHint}" />
+                        <TextBox IsReadOnly="True" TextWrapping="Wrap" Margin="3,12,3,3" Padding="6" AutomationProperties.Name="{DynamicResource Help.AppearanceName}"
+                                 Text="{DynamicResource Help.Appearance}" />
+                        <Label Content="{DynamicResource Reset.GuideLabel}" Target="{Binding ElementName=ResetGuideReadout}" />
+                        <TextBox x:Name="ResetGuideReadout" Style="{StaticResource ReadoutStyle}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MaxHeight="340"
+                                 AutomationProperties.Name="{DynamicResource Reset.GuideName}" />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+        <Grid Grid.Row="3" Margin="12,2,12,12" KeyboardNavigation.TabIndex="3">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+            <Label x:Name="OperationMessageLabel" Content="{DynamicResource Status.Label}" Target="{Binding ElementName=StatusMessage}" />
+            <TextBox x:Name="StatusMessage" Grid.Row="1" IsReadOnly="True" TextWrapping="Wrap" MinHeight="54" MaxHeight="100" Padding="6"
+                     VerticalScrollBarVisibility="Auto" Text="{DynamicResource Status.Ready}"
+                     AutomationProperties.Name="{DynamicResource Status.Name}" AutomationProperties.LiveSetting="Polite"
+                     local:UsageHints.Text="{DynamicResource Status.Hint}" />
+            <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Bottom">
+                <Button x:Name="RefreshButton" Content="{DynamicResource Control.Refresh}" IsEnabled="False" Click="OnRefresh" AutomationProperties.Name="{DynamicResource Control.RefreshName}" />
+                <Button x:Name="CancelButton" Content="{DynamicResource Control.Cancel}" IsEnabled="False" Click="OnCancelOperation" AutomationProperties.Name="{DynamicResource Control.CancelName}" local:UsageHints.Text="{DynamicResource Control.CancelHint}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

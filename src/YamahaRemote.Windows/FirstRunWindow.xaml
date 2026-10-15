@@ -1,0 +1,56 @@
+<Window x:Class="YamahaRemote.Windows.FirstRunWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:YamahaRemote.Windows"
+        Title="{DynamicResource Setup.Title}" Width="660" Height="590" MinWidth="480" MinHeight="430"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResize" Language="pl-PL" Loaded="OnLoaded">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="{DynamicResource Setup.Introduction}" TextWrapping="Wrap" Margin="0,0,0,14" />
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+        <StackPanel>
+            <Label Content="{DynamicResource Setup.Language}" Target="{Binding ElementName=LanguageChoice}" />
+            <ComboBox x:Name="LanguageChoice" SelectedIndex="-1" SelectionChanged="OnChoiceChanged"
+                      AutomationProperties.Name="{DynamicResource Setup.Language}">
+                <ComboBoxItem Content="Polski" Tag="pl" />
+                <ComboBoxItem Content="English" Tag="en" />
+            </ComboBox>
+            <Label Content="{DynamicResource Setup.Theme}" Target="{Binding ElementName=ThemeChoice}" />
+            <ComboBox x:Name="ThemeChoice" SelectedIndex="-1" SelectionChanged="OnChoiceChanged"
+                      AutomationProperties.Name="{DynamicResource Setup.Theme}">
+                <ComboBoxItem Content="{DynamicResource Theme.Light}" Tag="Light" />
+                <ComboBoxItem Content="{DynamicResource Theme.Dark}" Tag="Dark" />
+            </ComboBox>
+            <Label Content="{DynamicResource Settings.TextScale}" Target="{Binding ElementName=TextScaleChoice}" />
+            <ComboBox x:Name="TextScaleChoice" DisplayMemberPath="DisplayName" SelectedValuePath="Value"
+                      SelectionChanged="OnTextScaleChanged" AutomationProperties.Name="{DynamicResource Settings.TextScale}" />
+            <CheckBox x:Name="ShowHintsChoice" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Setup.ShowHints}" Margin="3,16"
+                      Checked="OnHintsChanged" Unchecked="OnHintsChanged" AutomationProperties.Name="{DynamicResource Setup.ShowHints}" />
+            <CheckBox x:Name="ShowOperationMessagesChoice" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Feedback.ShowOperations}" Margin="3,8"
+                      AutomationProperties.Name="{DynamicResource Feedback.ShowOperations}" />
+            <Label Content="{DynamicResource Feedback.DisplayModeName}" Target="{Binding ElementName=ValueDisplayModeChoice}" />
+            <ComboBox x:Name="ValueDisplayModeChoice" AutomationProperties.Name="{DynamicResource Feedback.DisplayModeName}">
+                <ComboBoxItem Content="{DynamicResource Feedback.ReadOnlyFields}" Tag="{x:Static local:ValueDisplayMode.ReadOnlyFields}" />
+                <ComboBoxItem Content="{DynamicResource Feedback.StaticText}" Tag="{x:Static local:ValueDisplayMode.StaticText}" />
+                <ComboBoxItem Content="{DynamicResource Feedback.NoValues}" Tag="{x:Static local:ValueDisplayMode.None}" />
+            </ComboBox>
+            <CheckBox x:Name="AnnounceStateChangesChoice" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Feedback.AnnounceChanges}" Margin="3,8"
+                      AutomationProperties.Name="{DynamicResource Feedback.AnnounceChanges}" />
+        </StackPanel>
+        </ScrollViewer>
+        <TextBox x:Name="SetupStatus" Grid.Row="2" IsReadOnly="True" IsReadOnlyCaretVisible="True" TextWrapping="Wrap"
+                 BorderThickness="0" Margin="0,12" Text="{DynamicResource Setup.Required}" AutomationProperties.Name="{DynamicResource Setup.Required}"
+                 AutomationProperties.LiveSetting="Polite" />
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="ContinueButton" Content="{DynamicResource Setup.Continue}" IsDefault="True" IsEnabled="False" Click="OnContinue"
+                    AutomationProperties.Name="{DynamicResource Setup.Continue}" />
+            <Button x:Name="CancelButton" Content="{DynamicResource Setup.Cancel}" Click="OnCancel"
+                    AutomationProperties.Name="{DynamicResource Setup.Cancel}" />
+        </StackPanel>
+    </Grid>
+</Window>
