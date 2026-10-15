@@ -101,13 +101,18 @@ public sealed partial class WindowFlowTests
             Button[] enabledActions = SectionElements(devices).OfType<Button>().Where(button => button.IsEnabled).ToArray();
             Assert.NotEmpty(enabledActions);
             Assert.True(enabledActions[0].Focus());
+            await SettleAsync();
             for (int index = 1; index < enabledActions.Length; index++)
             {
                 Assert.True(enabledActions[index - 1].MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)));
+                await SettleAsync();
                 Assert.True(enabledActions[index].IsKeyboardFocusWithin,
                     $"Expected device action focus in {enabledActions[index].Name}.");
             }
-            Assert.True(enabledActions[^1].MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)));
+            TextBox status = Control<TextBox>("StatusMessage");
+            Assert.True(enabledActions[^1].MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)),
+                $"Cannot leave {enabledActions[^1].Name}; focus={(Keyboard.FocusedElement as FrameworkElement)?.Name}; active={window.IsActive}; status visible={status.IsVisible}, enabled={status.IsEnabled}, focusable={status.Focusable}, tabstop={status.IsTabStop}; scale={window.FontSize}.");
+            await SettleAsync();
             Assert.True(Control<TextBox>("StatusMessage").IsKeyboardFocusWithin);
             TextBlock summary = Control<TextBlock>("ConnectionSummary");
             Assert.True(summary.IsVisible);
@@ -625,8 +630,11 @@ public sealed partial class WindowFlowTests
             }
             Assert.Same(section, Window.GetWindow(target));
             Assert.NotEmpty(Assert.IsType<string>(label.Content));
+            Assert.Same(label, AutomationProperties.GetLabeledBy(target));
+            AutomationPeer labelPeer = SectionPeer(label);
             AutomationPeer peer = SectionPeer(target);
             Assert.NotEmpty(peer.GetName());
+            Assert.Same(labelPeer, peer.GetLabeledBy());
             Assert.Same(label, Assert.IsAssignableFrom<FrameworkElementAutomationPeer>(peer.GetLabeledBy()).Owner);
         }
         if (settingsTabs is not null)
