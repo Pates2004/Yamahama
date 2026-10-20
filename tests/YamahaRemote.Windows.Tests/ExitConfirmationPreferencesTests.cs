@@ -37,7 +37,8 @@ public sealed class ExitConfirmationPreferencesTests
         UiPreferences loaded = UiPreferences.Load(out string? warning, path);
         Assert.Null(warning);
         Assert.True(loaded.ConfirmExit);
-        Assert.Equal(original with { SavedDevices = loaded.SavedDevices, HiddenRows = loaded.HiddenRows }, loaded);
+        Assert.Equal(original.Hotkeys, loaded.Hotkeys);
+        Assert.Equal(original with { SavedDevices = loaded.SavedDevices, HiddenRows = loaded.HiddenRows, Hotkeys = loaded.Hotkeys }, loaded);
         Assert.Equal(original.SavedDevices, loaded.SavedDevices);
         Assert.Equal(before, File.ReadAllBytes(path));
     }

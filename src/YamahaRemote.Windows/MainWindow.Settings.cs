@@ -41,9 +41,35 @@ public partial class MainWindow
             return true;
         ReconcileSettingsDevices();
         UiPreferences candidate = _settingsDraft! with { SavedDevices = _uiPreferences.SavedDevices };
+        if (!candidate.ValidateHotkeys(out var validationError))
+        {
+            SetStatus(DescribeHotkeyError(validationError!), true);
+            SettingsTabs.SelectedItem = HotkeysSettingsTab;
+            SettingsTabs.UpdateLayout();
+            if (_hotkeyFields.TryGetValue(validationError!.Action, out TextBox? field))
+                field.Focus();
+            return false;
+        }
+        candidate = candidate with
+        {
+            Hotkeys = candidate.Hotkeys.Select(binding => binding with
+            {
+                Gesture = string.IsNullOrWhiteSpace(binding.Gesture) ? string.Empty
+                    : HotkeyGestureParser.TryParse(binding.Gesture, out var gesture) ? gesture.Format() : binding.Gesture
+            }).ToArray()
+        };
+        if (_globalHotkeys is not null && !_globalHotkeys.TryApply(candidate.GlobalHotkeysEnabled, candidate.Hotkeys, out var registrationError))
+        {
+            SetStatus(DescribeHotkeyError(registrationError!), true);
+            return false;
+        }
         bool previousAutoApply = _uiPreferences.AutoApplySelections;
         if (!SaveWithStartupRegistration(candidate))
+        {
+            if (_globalHotkeys is not null && !_globalHotkeys.TryApply(_uiPreferences.GlobalHotkeysEnabled, _uiPreferences.Hotkeys, out var rollbackError))
+                SetStatus(DescribeHotkeyError(rollbackError!), true);
             return false;
+        }
         _settingsDraft = null;
         _settingsBaseline = null;
         _settingsStartupTargetEdited = false;
@@ -81,8 +107,9 @@ public partial class MainWindow
     private static bool SameSettings(UiPreferences first, UiPreferences second)
     {
         return first.HiddenRows.ToHashSet().SetEquals(second.HiddenRows)
-            && first with { SavedDevices = Array.Empty<SavedSoundbar>(), HiddenRows = Array.Empty<ControlRow>() }
-                == second with { SavedDevices = Array.Empty<SavedSoundbar>(), HiddenRows = Array.Empty<ControlRow>() };
+            && first.Hotkeys.OrderBy(binding => binding.Action).SequenceEqual(second.Hotkeys.OrderBy(binding => binding.Action))
+            && first with { SavedDevices = Array.Empty<SavedSoundbar>(), HiddenRows = Array.Empty<ControlRow>(), Hotkeys = Array.Empty<HotkeyBinding>() }
+                == second with { SavedDevices = Array.Empty<SavedSoundbar>(), HiddenRows = Array.Empty<ControlRow>(), Hotkeys = Array.Empty<HotkeyBinding>() };
     }
 
     private void ReconcileSettingsDevices()
@@ -130,6 +157,7 @@ public partial class MainWindow
             ShowHintsCheckBox.IsChecked = preferences.ShowHints;
             ShowOperationMessagesCheckBox.IsChecked = preferences.ShowOperationMessages;
             AnnounceStateChangesCheckBox.IsChecked = preferences.AnnounceStateChanges;
+            AnnounceExternalStateChangesCheckBox.IsChecked = preferences.AnnounceExternalStateChanges;
             Select(ValueDisplayModeChoice, preferences.ValueDisplayMode);
             Select(VolumeControlModeChoice, preferences.VolumeControlMode);
             Select(SubwooferControlModeChoice, preferences.SubwooferControlMode);
@@ -137,6 +165,7 @@ public partial class MainWindow
             ConfirmExitCheckBox.IsChecked = preferences.ConfirmExit;
             StartWithWindowsCheckBox.IsChecked = preferences.StartWithWindows;
             KeepPoweredOnCheckBox.IsChecked = preferences.KeepPoweredOn;
+            PopulateHotkeyControls();
             RefreshStartupDevices();
         }
         finally
@@ -162,6 +191,7 @@ public partial class MainWindow
             "Controls" => "Settings.ControlsTab",
             "Startup" => "Settings.StartupTab",
             "Closing" => "Settings.ClosingTab",
+            "Hotkeys" => "Hotkeys.Tab",
             _ => throw new ArgumentOutOfRangeException(nameof(sender))
         };
         if (!_confirmSettingsAction(Localization.Text("Settings.ResetTabConfirm", Localization.Text(titleKey)),
@@ -172,6 +202,7 @@ public partial class MainWindow
         {
             "Appearance" => preferences with { Theme = defaults.Theme, TextScale = defaults.TextScale },
             "MainScreen" => preferences with { HiddenRows = defaults.HiddenRows },
+            "Hotkeys" => preferences with { GlobalHotkeysEnabled = defaults.GlobalHotkeysEnabled, Hotkeys = defaults.Hotkeys },
             "Controls" => preferences with
             {
                 VolumeControlMode = defaults.VolumeControlMode,
@@ -180,7 +211,8 @@ public partial class MainWindow
                 ShowHints = defaults.ShowHints,
                 ShowOperationMessages = defaults.ShowOperationMessages,
                 ValueDisplayMode = defaults.ValueDisplayMode,
-                AnnounceStateChanges = defaults.AnnounceStateChanges
+                AnnounceStateChanges = defaults.AnnounceStateChanges,
+                AnnounceExternalStateChanges = defaults.AnnounceExternalStateChanges
             },
             "Startup" => preferences with
             {

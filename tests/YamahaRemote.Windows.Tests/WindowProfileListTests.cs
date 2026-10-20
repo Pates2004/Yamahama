@@ -118,7 +118,8 @@ public sealed partial class WindowFlowTests
             Assert.True(profiles.IsKeyboardFocusWithin);
             Assert.True(((UIElement)Keyboard.FocusedElement).MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)));
             await SettleReadoutWindowAsync(window);
-            Assert.True(nameInput.IsKeyboardFocusWithin);
+            Assert.True(nameInput.IsKeyboardFocusWithin,
+                $"Profile Tab destination: {Keyboard.FocusedElement?.GetType().Name}/{(Keyboard.FocusedElement as FrameworkElement)?.Name}; section active={settings.IsActive}; input visible={nameInput.IsVisible}, enabled={nameInput.IsEnabled}; list tab stop={profiles.IsTabStop}; language={language}.");
 
             nameInput.Text = "Unfinished name";
             Assert.True(nameInput.Focus());

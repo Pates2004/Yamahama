@@ -88,7 +88,10 @@ public partial class MainWindow
         IInputElement? returnFocus = _lastMainContentFocus;
         bool isSettings = page == SettingsTab;
         if (isSettings)
+        {
             BeginSettings();
+            SettingsTabs.SelectedItem = AppearanceSettingsTab;
+        }
         page.Content = null;
         SectionWindow section = new(content, identifier, titleKey) { Owner = this };
         section.PreviewKeyDown += OnFocusInteraction;
@@ -98,10 +101,13 @@ public partial class MainWindow
         _sectionWindows.Add(page, section);
         section.ApplyPreferences(_uiPreferences);
         section.UpdateStatus(StatusMessage.Text, _statusIsImportant || _uiPreferences.ShowOperationMessages);
+        bool navigationStarted = false;
+        section.PreviewKeyDown += (_, _) => navigationStarted = true;
+        section.PreviewMouseDown += (_, _) => navigationStarted = true;
         section.ContentRendered += (_, _) =>
         {
-            if (isSettings)
-                SettingsTabs.SelectedItem = AppearanceSettingsTab;
+            if (navigationStarted || isSettings && SettingsTabs.SelectedItem != AppearanceSettingsTab)
+                return;
             initialFocus.Focus();
         };
         section.Closed += (_, _) =>

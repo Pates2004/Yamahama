@@ -48,6 +48,7 @@ public sealed class FeedbackPreferencesTests
         Assert.False(saved.UseReadOnlyValueFields);
         Assert.Equal(ValueDisplayMode.StaticText, saved.ValueDisplayMode);
         Assert.True(saved.AnnounceStateChanges);
+        Assert.False(saved.AnnounceExternalStateChanges);
         Assert.False(saved.ShowHints);
         Assert.Equal("Dark", saved.Theme);
     }
@@ -56,6 +57,7 @@ public sealed class FeedbackPreferencesTests
     [InlineData("ShowOperationMessages")]
     [InlineData("UseReadOnlyValueFields")]
     [InlineData("AnnounceStateChanges")]
+    [InlineData("AnnounceExternalStateChanges")]
     public void NonBooleanPreferencesAreRejectedWithoutOverwritingTheFile(string key)
     {
         Localization.Initialize();

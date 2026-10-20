@@ -1,6 +1,6 @@
 # Yamahama — pilot Yamaha SR-C30A dla Windows
 
-Nieoficjalny pilot Bluetooth Low Energy, napisany w C# / WPF, z interfejsem polskim i angielskim. Wersja testowa: **0.16.0**. Projekt nie jest powiązany z Yamaha Corporation ani przez nią dostarczany lub zatwierdzony. Nazwy produktów należą do ich właścicieli. [English documentation](README.en.md).
+Nieoficjalny pilot Bluetooth Low Energy, napisany w C# / WPF, z interfejsem polskim i angielskim. Wersja testowa: **0.17.0**. Projekt nie jest powiązany z Yamaha Corporation ani przez nią dostarczany lub zatwierdzony. Nazwy produktów należą do ich właścicieli. [English documentation](README.en.md).
 
 ## Wymagania i uruchomienie
 
@@ -29,26 +29,35 @@ Okna pomocnicze nie blokują zwykłego sterowania. Ponowne wybranie menu przywo�
 
 Przy wyłączonym, połączonym soundbarze kontrolki dźwięku pozostają dostępne z klawiatury, ale próba zmiany nie wysyła polecenia i wyświetla komunikat: **Soundbar jest wyłączony. Włącz zasilanie, aby zmieniać ustawienia.** Poprzednie wartości pozostają bez zmian. Dotyczy to także skrótów, zasobnika i stosowania profilu. Zasilanie, odczyt stanu, obsługa urządzeń i ustawienia samej aplikacji pozostają dostępne; po potwierdzeniu włączenia można znów regulować dźwięk. Ostrzeżenie nie jest opcjonalną wskazówką i działa również przy wyłączonych komunikatach operacji.
 
-Ustawienia mają sześć kart, obsługiwanych klawiaturą:
+Ustawienia mają siedem kart, obsługiwanych klawiaturą:
 
 | Karta | Zawartość |
 | --- | --- |
 | **Wygląd** | Język, motyw i rozmiar tekstu. Reset karty zachowuje wybrany język. |
 | **Ekran główny** | Dziewięć ustawień widoczności: zasilanie, wejście, głośność, wyciszenie, wzmocnienie subwoofera, tryb dźwięku, wyraźny głos, wzmocnienie basu i jasność wskaźników. |
 | **Sterowanie i komunikaty** | Sposób sterowania głośnością urządzenia i subwooferem, autozastosowanie wyborów, podpowiedzi, komunikaty oraz odczyty. |
+| **Skróty klawiszowe** | Globalne skróty, pola kombinacji, przechwytywanie klawiszy i włącznik obsługi. |
 | **Uruchamianie i zasilanie** | Autostart Windows, urządzenie startowe, autołączenie, włączanie przy starcie i powstrzymywanie urządzenia przed wyłączeniem się. |
 | **Zamykanie** | Wyłączanie urządzenia przy zamykaniu programu, chowanie głównego okna do zasobnika i ostrzeganie przed zamknięciem programu. |
 | **Profile i domyślne ustawienia aplikacji** | Lista nazwanych profili połączonego urządzenia, pole nazwy do zapisu profilu i przywracanie domyślnych ustawień całej aplikacji bez usuwania danych profili. |
 
 **OK zapisuje i stosuje wszystkie robocze zmiany ustawień.** Przed OK nie ma podglądu na żywo: język, motyw, skala tekstu, widoczność, sposób sterowania i zachowanie programu pozostają dotychczasowe. **Anuluj**, Escape lub zamknięcie okna ustawień odrzuca niezapisane zmiany po potwierdzeniu, jeśli coś zmieniono; można odmówić i wrócić do edycji. Błąd zapisu pozostawia okno otwarte do poprawienia problemu i ponownej próby, bez uznawania zmian za przyjęte tylko na bieżącą sesję. Gdy trwa operacja, poczekaj na jej zakończenie i ponownie wybierz OK.
 
-Każda z pierwszych pięciu kart ma przycisk **Przywróć domyślne ustawienia**. Potwierdzenie wskazuje bieżącą kartę; reset obejmuje tylko jej preferencje, bez zmiany języka, pozostałych kart, zapisanych urządzeń ani profili. Dopiero **OK** zapisuje i stosuje reset, a **Anuluj** go odrzuca. Wygląd nie zmienia już widoczności elementów; przywrócisz je na karcie **Ekran główny**.
+Każda z pierwszych sześciu kart ma przycisk **Przywróć domyślne ustawienia**. Potwierdzenie wskazuje bieżącą kartę; reset obejmuje tylko jej preferencje, bez zmiany języka, pozostałych kart, zapisanych urządzeń ani profili. Dopiero **OK** zapisuje i stosuje reset, a **Anuluj** go odrzuca. Wygląd nie zmienia już widoczności elementów; przywrócisz je na karcie **Ekran główny**.
 
 Samo przełączanie kart nie zapisuje zmian. Wybór urządzenia startowego jest obok autołączenia i włączania soundbara. Informacje bezpieczeństwa autołączenia i ochrony zasilania przeniesiono do **Pomocy**; pozostają dostępne również po wyłączeniu podpowiedzi.
 
 Sterowanie obejmuje zasilanie/czuwanie; wejścia TV, optyczne, Bluetooth i analogowe; głośność **0–50**, wyciszenie, **wzmocnienie subwoofera −4…+4**; Stereo, Standardowy, Film 3D i Gra; wyraźny głos, wzmocnienie basu i jasność wskaźników. Dostępne są odczyty modelu, firmware i stanu.
 
 **Wzmocnienie subwoofera** to precyzyjniejsza etykieta dotychczasowej regulacji, nie dodatkowa funkcja ani wzmocnienie basu. Protokół rozpoznano dla interoperacyjności z SR-C30A, m.in. przez analizę Sound Bar Remote 2.50; obsługa innych modeli nie jest deklarowana.
+
+## Zasobnik, skróty globalne i ogłoszenia
+
+Menu zasobnika podaje bieżącą jasność wskaźników, a jej opcje, wejścia i tryby udostępniają czytnikowi stan zaznaczenia. Gdy sposób sterowania ustawiono na **Suwak**, menu głośności zawiera poziomy 0–50, a wzmocnienia subwoofera −4…+4. **Przyciski** pozostawiają zwiększanie i zmniejszanie. Każdy wybór wysyła polecenie, lecz oznaczenie zmienia się dopiero po potwierdzeniu stanu przez urządzenie.
+
+W **Plik → Ustawienia → Skróty klawiszowe** każda akcja ma pole kombinacji i przycisk **Przechwyć skrót**. Możesz też wpisać np. `Ctrl+Alt+Shift+Up`; puste pole usuwa przypisanie. Globalne skróty są domyślnie wyłączone, działają tylko podczas działania aplikacji, także w zasobniku, a zmiany wymagają **OK**. Powtórzone, nieprawidłowe lub zajęte kombinacje powodują komunikat zamiast cichego zapisu. **Przywróć domyślne ustawienia** przywraca przypisania i wyłącza skróty po potwierdzeniu i OK. Domyślne kombinacje `Ctrl+Alt+Shift` z `Up`/`Down` regulują głośność, z `Right`/`Left` wzmocnienie subwoofera, z `M` wyciszenie, z `P` zasilanie, a z `Y` pokazują okno; pozostałe akcje są nieprzypisane. Zwykłe klawisze pisania, sama kombinacja z Shift i zarezerwowane skróty systemowe nie są przechwytywane.
+
+Na karcie **Sterowanie i komunikaty** są niezależne opcje ogłaszania wyników poleceń aplikacji oraz **zmian wykonanych poza aplikacją** (domyślnie wyłączona). Druga działa po połączeniu również przy ukrytym oknie i ogłasza zmienione wartości, także gdy używasz suwaków. Nie powtarza niezmienionych odczytów ani pierwszego odczytu po połączeniu. Bluetooth nie określa, czy zmianę wykonał pilot, telefon czy panel; zmiany podczas polecenia aplikacji mogą być zgłoszone razem z jego wynikiem. Odczyt w tle odbywa się mniej więcej co sekundę, więc szybkie zmiany pomiędzy odczytami mogą nie zostać osobno ogłoszone. Nadal wymagane jest połączenie BLE i czytnik obsługujący powiadomienia UI Automation.
 
 ## Połączenie i ustawienia domyślne
 
@@ -106,13 +115,13 @@ Każde zapisane urządzenie może mieć **wiele nazwanych profili dźwięku**: t
 
 - **Tab / Shift+Tab** — kontrolki i widoczne odczyty parametrów; **Spacja, Enter i strzałki** — standardowa obsługa kontrolek.
 - Na listę profili, zapisanych lub znalezionych urządzeń wchodzisz **jednym Tab**; **strzałki** od razu zmieniają wybór bez dodatkowego Tab. Kolejny Tab opuszcza listę.
-- **Ctrl+Tab** — przełączanie kart głównego okna lub sześciu kart Ustawień, zależnie od aktywnego okna. Strzałki na nagłówku wybierają kartę; Tab przechodzi do jej zawartości.
+- **Ctrl+Tab** — przełączanie kart głównego okna lub siedmiu kart Ustawień, zależnie od aktywnego okna. Strzałki na nagłówku wybierają kartę; Tab przechodzi do jej zawartości.
 - Suwaki: strzałki zmieniają o 1; **Page Up / Page Down** — głośność o 5, subwoofer o 1; **Home / End** — minimum/maksimum.
 - **Ctrl + plus/minus** — głośność; **Alt + plus/minus** — subwoofer; także klawiatura numeryczna.
 - **Alt** — menu, które nie należy do zwykłej kolejności Tab / Shift+Tab; **Win+B** — obszar powiadomień; **Shift+F10** — menu wybranej ikony.
 - **Escape** — okno pomocnicze lub otwarta lista, nie okno główne ani obowiązkowa konfiguracja. W Ustawieniach działa jak Anuluj: niezapisane zmiany wymagają potwierdzenia odrzucenia.
 
-Opcjonalne nazwy grup kart **Sekcje programu** i **Kategorie ustawień** podlegają ustawieniu podpowiedzi i znikają po jego wyłączeniu i zatwierdzeniu przez OK. Nazwy poszczególnych kart głównego okna i wszystkich sześciu kart Ustawień pozostają dostępne.
+Opcjonalne nazwy grup kart **Sekcje programu** i **Kategorie ustawień** podlegają ustawieniu podpowiedzi i znikają po jego wyłączeniu i zatwierdzeniu przez OK. Nazwy poszczególnych kart głównego okna i wszystkich siedmiu kart Ustawień pozostają dostępne.
 
 UI Automation udostępnia nazwy, etykiety, stany i powiadomienia; ważne informacje nie zależą wyłącznie od koloru. **Pełny odsłuch NVDA nie jest potwierdzony.**
 
@@ -135,7 +144,7 @@ Na Windows z **SDK .NET 10**, w katalogu źródeł:
 dotnet test YamahaRemote.slnx -c Release
 ```
 
-Skrypt zachowuje poprzednie buildy w `D:\work\Snapshots\<nazwa katalogu projektu>`, chroni konfigurację i tworzy `installfiles` z EXE oraz `langs`. Używa `SelfContained=false`, `PublishSelfContained=false`, `UseAppHost=true`, `OutputType=WinExe`, bez Native AOT. Nie uruchamiaj równolegle operacji zmieniających te same wyniki kompilacji.
+Skrypt przenosi zwykłe zastępowane pliki kompilacji do `D:\work\Trash\<nazwa folderu projektu>`, bez ich kasowania i z weryfikacją sum kontrolnych. `Snapshots` służy tylko materiałom z konkretnym bieżącym zastosowaniem i warunkiem ponownej oceny. Skrypt chroni konfigurację i tworzy `installfiles` z EXE oraz `langs`. Używa `SelfContained=false`, `PublishSelfContained=false`, `UseAppHost=true`, `OutputType=WinExe`, bez Native AOT. Nie uruchamiaj równolegle operacji zmieniających te same wyniki kompilacji.
 
 Wyniki dotyczą konkretnego buildu. **Testy zarządzane nie potwierdzają fizycznych cykli zasilania, wszystkich skutków komend ani pełnej mowy NVDA.** Nie gwarantujemy braku błędów lub zgodności z każdym adapterem. Zgłaszając problem, podaj wersję i kroki odtworzenia; usuń prywatne dane z diagnostyki.
 

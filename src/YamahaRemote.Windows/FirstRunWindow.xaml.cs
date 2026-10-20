@@ -27,6 +27,7 @@ public partial class FirstRunWindow : Window
         ValueDisplayModeChoice.SelectedItem = ValueDisplayModeChoice.Items.Cast<ComboBoxItem>()
             .First(item => item.Tag is ValueDisplayMode mode && mode == configuration.ValueDisplayMode);
         AnnounceStateChangesChoice.IsChecked = configuration.AnnounceStateChanges;
+        AnnounceExternalStateChangesChoice.IsChecked = configuration.AnnounceExternalStateChanges;
         UsageHints.SetEnabled(this, configuration.ShowHints);
         _initialized = true;
     }
@@ -77,6 +78,7 @@ public partial class FirstRunWindow : Window
             ShowOperationMessages = ShowOperationMessagesChoice.IsChecked == true,
             ValueDisplayMode = mode,
             AnnounceStateChanges = AnnounceStateChangesChoice.IsChecked == true,
+            AnnounceExternalStateChanges = AnnounceExternalStateChangesChoice.IsChecked == true,
             TextScale = ((TextScaleOption)TextScaleChoice.SelectedItem).Value,
             FirstRunCompleted = true
         };

@@ -73,7 +73,12 @@ public partial class MainWindow
             command => CanAdjust ? SendCommandAsync(command) : Task.CompletedTask,
             delta => CanAdjust && _lastState is { Volume: >= 0 and <= 50 } ? SetVolumeAsync(Math.Clamp(_lastState.Volume + delta, 0, 50)) : Task.CompletedTask,
             () => OnRefresh(this, new RoutedEventArgs()), () => OnDisconnect(this, new RoutedEventArgs()),
-            () => OnCancelOperation(this, new RoutedEventArgs()));
+            () => OnCancelOperation(this, new RoutedEventArgs()),
+            target => CanAdjust && target is >= 0 and <= 50 && _lastState is { Volume: >= 0 and <= 50 }
+                ? SetVolumeAsync(target) : Task.CompletedTask,
+            target => CanAdjust && target is >= -4 and <= 4 && _lastState is { Subwoofer: >= -4 and <= 4 }
+                ? SetSubwooferLevelAsync(target) : Task.CompletedTask);
+        _tray.ApplyLevelPreferences(_uiPreferences.VolumeControlMode, _uiPreferences.SubwooferControlMode);
         _tray.RefreshLabels(_uiPreferences.TextScale);
         UpdateTrayState();
     }

@@ -354,11 +354,26 @@
                                     </ComboBox>
                                     <CheckBox x:Name="AnnounceStateChangesCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Feedback.AnnounceChanges}" Margin="3,8"
                                               Checked="OnBehaviorSettingsChanged" Unchecked="OnBehaviorSettingsChanged" AutomationProperties.Name="{DynamicResource Feedback.AnnounceChanges}" />
+                                    <CheckBox x:Name="AnnounceExternalStateChangesCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Feedback.AnnounceExternalChanges}" Margin="3,8"
+                                              Checked="OnBehaviorSettingsChanged" Unchecked="OnBehaviorSettingsChanged" AutomationProperties.Name="{DynamicResource Feedback.AnnounceExternalChanges}" />
+                                    <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Feedback.ExternalExplanation}" TextWrapping="Wrap" Margin="3,8" />
                                     <Button x:Name="ResetControlsSettingsButton" Content="{DynamicResource Settings.ResetTab}" HorizontalAlignment="Left" Margin="3,12,3,3"
                                             Click="OnResetSettingsTab" Tag="Controls" AutomationProperties.Name="{DynamicResource Settings.ResetTab}" />
                                     <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Feedback.Explanation}" TextWrapping="Wrap" Margin="3,8" />
                                     <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Settings.AutoApplyExplanation}" TextWrapping="Wrap" Margin="3,8" />
                                     <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Settings.HintsExplanation}" TextWrapping="Wrap" Margin="3,8" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                        <TabItem x:Name="HotkeysSettingsTab" Header="{DynamicResource Hotkeys.Tab}" AutomationProperties.Name="{DynamicResource Hotkeys.Tab}">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False" Padding="12">
+                                <StackPanel>
+                                    <CheckBox x:Name="GlobalHotkeysCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Hotkeys.Enabled}" Margin="3,8"
+                                              Checked="OnGlobalHotkeysChanged" Unchecked="OnGlobalHotkeysChanged" AutomationProperties.Name="{DynamicResource Hotkeys.Enabled}" />
+                                    <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Hotkeys.Explanation}" TextWrapping="Wrap" Margin="3,8" />
+                                    <StackPanel x:Name="HotkeyRows" />
+                                    <Button x:Name="ResetHotkeysSettingsButton" Content="{DynamicResource Settings.ResetTab}" HorizontalAlignment="Left" Margin="3,12,3,3"
+                                            Click="OnResetSettingsTab" Tag="Hotkeys" AutomationProperties.Name="{DynamicResource Settings.ResetTab}" />
                                 </StackPanel>
                             </ScrollViewer>
                         </TabItem>

@@ -128,22 +128,42 @@ function Move-YamahaBuildSnapshot {
         [Parameter(Mandatory = $true)][string]$ProjectRoot,
         [Parameter(Mandatory = $true)][string[]]$RelativePaths,
         [Parameter(Mandatory = $true)][string]$Label,
-        [Parameter(Mandatory = $true)][string]$Provenance
+        [Parameter(Mandatory = $true)][string]$Provenance,
+        [ValidateSet('Trash', 'Snapshots')][string]$Category = 'Trash',
+        [string]$RetentionReason = '',
+        [string]$ReevaluateWhen = ''
     )
 
     $ProjectRoot = [IO.Path]::GetFullPath($ProjectRoot).TrimEnd('\', '/')
-    if ($Label -notmatch '^[a-zA-Z0-9][a-zA-Z0-9._-]*$') { throw 'Unsafe snapshot label.' }
+    if ($Label -notmatch '^[a-zA-Z0-9][a-zA-Z0-9._-]*$') { throw 'Unsafe preservation label.' }
+    if ($Category -ieq 'Snapshots') {
+        $Category = 'Snapshots'
+        if ([string]::IsNullOrWhiteSpace($RetentionReason) -or [string]::IsNullOrWhiteSpace($ReevaluateWhen)) {
+            throw 'Intentional Snapshots retention requires a concrete RetentionReason and ReevaluateWhen condition.'
+        }
+    }
+    else {
+        $Category = 'Trash'
+        if ([string]::IsNullOrWhiteSpace($RetentionReason)) {
+            $RetentionReason = 'Superseded build artifacts selected by the caller; no current retention need.'
+        }
+    }
     $snapshotBase = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath 'snapshots'
+    $destinationBase = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath $Category
     $sources = @()
     foreach ($relativePath in $RelativePaths) {
         $path = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath $relativePath
         if ($path -eq $snapshotBase -or $path.StartsWith($snapshotBase + '\', [StringComparison]::OrdinalIgnoreCase)) {
             throw 'Existing snapshots must not be moved or overwritten.'
         }
+        if ($path -eq $destinationBase -or $path.StartsWith($destinationBase + '\', [StringComparison]::OrdinalIgnoreCase) -or
+            $destinationBase.StartsWith($path + '\', [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'Preservation sources and destination category must not overlap.'
+        }
         foreach ($source in $sources) {
             if ($path -eq $source -or $path.StartsWith($source + '\', [StringComparison]::OrdinalIgnoreCase) -or
                 $source.StartsWith($path + '\', [StringComparison]::OrdinalIgnoreCase)) {
-                throw 'Snapshot selections must not overlap.'
+                throw 'Preservation selections must not overlap.'
             }
         }
         $sources += $path
@@ -155,13 +175,24 @@ function Move-YamahaBuildSnapshot {
     $records = @($files | ForEach-Object {
         Get-SnapshotFileRecord -ProjectRoot $ProjectRoot -RelativePath (Get-ProjectMaterialRelativePath $ProjectRoot $_.FullName)
     })
-    $snapshotRelativePath = 'snapshots\' + $Label + '-' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ') + '-' + [Guid]::NewGuid().ToString('N')
-    $snapshotRoot = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath $snapshotRelativePath
-    if (Test-Path -LiteralPath $snapshotRoot) { throw "Snapshot already exists: $snapshotRoot" }
+    $preservationName = $Label + '-' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ') + '-' + [Guid]::NewGuid().ToString('N')
+    $preservationRelativePath = $Category + '\' + $preservationName
+    $preservationRoot = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath $preservationRelativePath
+    if (Test-Path -LiteralPath $preservationRoot) { throw "Preservation destination already exists: $preservationRoot" }
+    $retentionRecordPath = $null
+    if ($Category -eq 'Snapshots') {
+        $retentionRecordPath = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath ('Forme\build-retention\' + $preservationName + '.json')
+        if (Test-Path -LiteralPath $retentionRecordPath) { throw "Retention record already exists: $retentionRecordPath" }
+        foreach ($source in $sources) {
+            if ($retentionRecordPath -eq $source -or $retentionRecordPath.StartsWith($source + '\', [StringComparison]::OrdinalIgnoreCase)) {
+                throw 'Retention records must remain outside selected sources.'
+            }
+        }
+    }
     foreach ($source in $sources) {
         $relativePath = Get-ProjectMaterialRelativePath $ProjectRoot $source
-        $target = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath ($snapshotRelativePath + '\' + $relativePath)
-        if (Test-Path -LiteralPath $target) { throw "Snapshot target already exists: $target" }
+        $target = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath ($preservationRelativePath + '\' + $relativePath)
+        if (Test-Path -LiteralPath $target) { throw "Preservation target already exists: $target" }
     }
     $currentItems = @(Get-SnapshotItems -ProjectRoot $ProjectRoot -RelativePaths $RelativePaths)
     $changes = @(Compare-Object -ReferenceObject @($items.FullName | Sort-Object) -DifferenceObject @($currentItems.FullName | Sort-Object))
@@ -173,42 +204,63 @@ function Move-YamahaBuildSnapshot {
         }
     }
     Assert-SnapshotProcessesIdle -ProjectRoot $ProjectRoot -Paths $sources
-    $null = New-Item -ItemType Directory -Path $snapshotRoot -ErrorAction Stop
+    $null = New-Item -ItemType Directory -Path $preservationRoot -ErrorAction Stop
     $manifest = [ordered]@{
         State = 'Prepared'
         CreatedUtc = [DateTime]::UtcNow.ToString('o')
         ProjectRoot = $ProjectRoot
         Provenance = $Provenance
+        Category = $Category
+        DestinationRoot = $preservationRoot
+        RetentionReason = $RetentionReason
+        ReevaluateWhen = $ReevaluateWhen
+        RetentionRecordPath = $retentionRecordPath
         Preservation = 'Move only; retain all bytes, relative paths and dependencies; verify SHA256 before and after.'
         SelectedPaths = $RelativePaths
         MovedPaths = @()
         Directories = @($items | Where-Object { $_.PSIsContainer } | ForEach-Object { Get-ProjectMaterialRelativePath $ProjectRoot $_.FullName })
         Files = $records
     }
-    $manifestPath = Join-Path $snapshotRoot 'manifest.json'
+    $manifestPath = Join-Path $preservationRoot 'manifest.json'
     $encoding = [Text.UTF8Encoding]::new($false)
     [IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 6), $encoding)
+    $retentionRecord = $null
+    $retentionRecordWritten = $false
     try {
+        if ($retentionRecordPath) {
+            $retentionRecord = [ordered]@{
+                ProjectRoot = $ProjectRoot
+                SnapshotRoot = $preservationRoot
+                ManifestPath = $manifestPath
+                RetentionReason = $RetentionReason
+                ReevaluateWhen = $ReevaluateWhen
+                CreatedUtc = $manifest.CreatedUtc
+                State = $manifest.State
+            }
+            $null = [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($retentionRecordPath))
+            [IO.File]::WriteAllText($retentionRecordPath, ($retentionRecord | ConvertTo-Json -Depth 3), $encoding)
+            $retentionRecordWritten = $true
+        }
         foreach ($source in $sources) {
             if (-not (Test-Path -LiteralPath $source)) { continue }
             $relativePath = Get-ProjectMaterialRelativePath $ProjectRoot $source
             $null = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath $relativePath
-            $target = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath ($snapshotRelativePath + '\' + $relativePath)
-            if (Test-Path -LiteralPath $target) { throw "Snapshot target already exists: $target" }
+            $target = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath ($preservationRelativePath + '\' + $relativePath)
+            if (Test-Path -LiteralPath $target) { throw "Preservation target already exists: $target" }
             $null = [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target))
             Move-Item -LiteralPath $source -Destination $target -ErrorAction Stop
             $manifest.MovedPaths += $relativePath
         }
         foreach ($record in $records) {
-            $preserved = Get-SnapshotFileRecord -ProjectRoot $ProjectRoot -RelativePath ($snapshotRelativePath + '\' + $record.RelativePath)
+            $preserved = Get-SnapshotFileRecord -ProjectRoot $ProjectRoot -RelativePath ($preservationRelativePath + '\' + $record.RelativePath)
             $record.AfterSHA256 = $preserved.BeforeSHA256
             if ($record.BeforeSHA256 -ne $record.AfterSHA256 -or $record.Bytes -ne $preserved.Bytes) {
-                throw "Snapshot integrity check failed: $($record.RelativePath)"
+                throw "Preservation integrity check failed: $($record.RelativePath)"
             }
         }
         foreach ($directory in $manifest.Directories) {
-            $target = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath ($snapshotRelativePath + '\' + $directory)
-            if (-not (Test-Path -LiteralPath $target -PathType Container)) { throw "Missing snapshot directory: $directory" }
+            $target = Get-SnapshotPath -ProjectRoot $ProjectRoot -RelativePath ($preservationRelativePath + '\' + $directory)
+            if (-not (Test-Path -LiteralPath $target -PathType Container)) { throw "Missing preserved directory: $directory" }
         }
         foreach ($source in $sources) {
             if (Test-Path -LiteralPath $source) { throw "A selected source remains after preservation: $source" }
@@ -217,12 +269,16 @@ function Move-YamahaBuildSnapshot {
     }
     catch {
         $manifest.State = 'Incomplete; publishing prohibited'
-        throw "Preservation failed. Keep all remaining sources and inspect $snapshotRoot. $($_.Exception.Message)"
+        throw "Preservation failed. Keep all remaining sources and inspect $preservationRoot. $($_.Exception.Message)"
     }
     finally {
         [IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 6), $encoding)
+        if ($retentionRecordWritten) {
+            $retentionRecord.State = $manifest.State
+            [IO.File]::WriteAllText($retentionRecordPath, ($retentionRecord | ConvertTo-Json -Depth 3), $encoding)
+        }
     }
-    return $snapshotRoot
+    return $preservationRoot
 }
 
 function Enter-YamahaBuildLock {

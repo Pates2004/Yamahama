@@ -77,21 +77,23 @@ public partial class MainWindow
         AutomationProperties.SetLiveSetting(StatusMessage, visible ? AutomationLiveSetting.Polite : AutomationLiveSetting.Off);
     }
 
-    private void AnnounceConfirmedState()
+    private void AnnounceConfirmedState(bool deviceUpdate = false)
     {
         if (!Connected || !_stateIsCurrent || _lastState is null)
         {
             _feedbackState = null;
             return;
         }
-        if (_busy)
+        if (_busy && _mutationInProgress)
             return;
         SoundbarState? previous = _feedbackState;
         _feedbackState = _lastState;
-        if (!_uiPreferences.AnnounceStateChanges || previous is null)
+        bool enabled = deviceUpdate ? _uiPreferences.AnnounceExternalStateChanges : _uiPreferences.AnnounceStateChanges;
+        if (!enabled || previous is null)
             return;
         ControlRow[] changed = SoundbarFeedback.ChangedRows(previous, _lastState);
-        string message = string.Join(". ", ParameterReadouts().Where(entry => changed.Contains(entry.Key) && !IsLevelReportedBySlider(entry.Key)).Select(entry => entry.Text.Text));
+        string message = string.Join(". ", ParameterReadouts().Where(entry => changed.Contains(entry.Key)
+            && (deviceUpdate || _globalHotkeyDepth != 0 || !IsLevelReportedBySlider(entry.Key))).Select(entry => entry.Text.Text));
         if (message.Length == 0)
             return;
         if (_announceState is not null)

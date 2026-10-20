@@ -67,6 +67,9 @@ internal sealed record UiPreferences
     public LevelControlMode VolumeControlMode { get; init; } = LevelControlMode.Slider;
     public LevelControlMode SubwooferControlMode { get; init; } = LevelControlMode.Slider;
     public bool AnnounceStateChanges { get; init; } = true;
+    public bool AnnounceExternalStateChanges { get; init; }
+    public bool GlobalHotkeysEnabled { get; init; }
+    public HotkeyBinding[] Hotkeys { get; init; } = HotkeyDefaults.Create().ToArray();
     public bool CloseToTray { get; init; }
     public bool ConfirmExit { get; init; } = true;
     public int TextScale { get; init; } = 100;
@@ -119,11 +122,23 @@ internal sealed record UiPreferences
                 throw new JsonException("A saved device record is missing.");
             device.Validate();
         }
+        if (!ValidateHotkeys(out _))
+            throw new JsonException("Invalid global keyboard shortcut configuration.");
         if (SavedDevices.Select(device => device.Address).Distinct().Count() != SavedDevices.Length)
             throw new JsonException("Duplicate saved device addresses.");
         if (PowerOnAtStartup && StartupDeviceAddress is null ||
             StartupDeviceAddress is ulong address && !SavedDevices.Any(device => device.Address == address))
             throw new JsonException("The startup device must belong to the saved device list.");
+    }
+
+    internal bool ValidateHotkeys(out HotkeyRegistrationError? error)
+    {
+        if (Hotkeys is null || Hotkeys.Length > Enum.GetValues<HotkeyAction>().Length)
+        {
+            error = new HotkeyRegistrationError(default, string.Empty, HotkeyRegistrationErrorReason.InvalidAction);
+            return false;
+        }
+        return GlobalHotkeyManager.ValidateBindings(Hotkeys, out error);
     }
 
     public static UiPreferences Load(out string? warning, string? filePath = null)

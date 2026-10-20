@@ -1,6 +1,6 @@
 # Yamahama — Yamaha SR-C30A remote for Windows
 
-An unofficial Bluetooth Low Energy remote, written in C# / WPF with Polish and English interfaces. Test version: **0.16.0**. The project is not affiliated with, supplied by or endorsed by Yamaha Corporation. Product names belong to their owners. [Polska dokumentacja](README.md).
+An unofficial Bluetooth Low Energy remote, written in C# / WPF with Polish and English interfaces. Test version: **0.17.0**. The project is not affiliated with, supplied by or endorsed by Yamaha Corporation. Product names belong to their owners. [Polska dokumentacja](README.md).
 
 ## Requirements and setup
 
@@ -29,26 +29,35 @@ Auxiliary windows do not block normal control. Selecting the same menu command a
 
 While a connected soundbar is off, sound controls remain keyboard-reachable, but an attempted change sends no command and reports: **The soundbar is off. Turn on its power to change settings.** Confirmed values remain unchanged. This also covers shortcuts, tray commands and applying a profile. Power, state refresh, device management and application preferences remain usable; sound adjustments resume after power-on is confirmed. This warning is not an optional hint and remains available when operation messages are disabled.
 
-Settings has six keyboard-accessible tabs:
+Settings has seven keyboard-accessible tabs:
 
 | Tab | Contents |
 | --- | --- |
 | **Appearance** | Language, theme and text size. Resetting this tab preserves the selected language. |
 | **Main screen** | Nine visibility settings: power, input, volume, mute, subwoofer gain, sound mode, Clear Voice, Bass Extension and indicator brightness. |
 | **Controls and feedback** | Device volume and subwoofer control methods, immediate selection application, hints, messages and readouts. |
+| **Keyboard shortcuts** | Global bindings, combination fields, key capture and a master switch. |
 | **Startup and power** | Windows startup, startup device, automatic connection, startup power-on and preventing the device from turning off. |
 | **Closing** | Device power-off when closing the application, main-window tray hiding and a warning before closing the application. |
 | **Profiles and application defaults** | The connected device's named profile list, a name field for saving a profile, and restoring defaults for the whole application without deleting profile data. |
 
 **OK saves and applies all drafted preference changes.** There is no live preview before OK: language, theme, text scale, visibility, control method and application behavior remain unchanged. **Cancel**, Escape or closing Settings discards unsaved changes after confirmation if anything was changed; decline to return to editing. A save failure keeps the window open to fix the problem and retry, without treating the changes as accepted for this session only. If an operation is running, wait for it to finish and choose OK again.
 
-Each of the first five tabs has a **Restore default settings** button. Its confirmation identifies the current tab; the reset affects only that tab’s preferences, without changing the language, other tabs, saved devices or profiles. Only **OK** saves and applies the reset; **Cancel** discards it. Appearance no longer changes control visibility; restore that on the **Main screen** tab.
+Each of the first six tabs has a **Restore default settings** button. Its confirmation identifies the current tab; the reset affects only that tab’s preferences, without changing the language, other tabs, saved devices or profiles. Only **OK** saves and applies the reset; **Cancel** discards it. Appearance no longer changes control visibility; restore that on the **Main screen** tab.
 
 Switching tabs does not save changes. The startup-device selector is beside automatic connection and startup power-on. Automatic-connection and power-protection safety information is now in **Help** and remains available with hints disabled.
 
 Controls include power/standby; TV, Optical, Bluetooth and Analog inputs; volume **0–50**, mute, **subwoofer gain −4…+4**; Stereo, Standard, 3D Movie, Game; Clear Voice, Bass Extension and indicator brightness. Model, firmware and state readings are available.
 
 **Subwoofer gain** is a clearer label for the existing adjustment, not an additional feature or Bass Extension. The protocol was identified for SR-C30A interoperability, including analysis of Sound Bar Remote 2.50; support for other models is not claimed.
+
+## Tray, global shortcuts and announcements
+
+The tray menu includes current indicator brightness; brightness, input and mode choices expose their checked state to screen readers. With **Slider** control selected, the volume submenu contains levels 0–50 and subwoofer gain contains −4…+4. **Buttons** keeps increase/decrease commands. Selection sends a command, but the check mark changes only after confirmed device read-back.
+
+In **File → Settings → Keyboard shortcuts**, each action has a combination field and **Capture shortcut** button. You can also enter e.g. `Ctrl+Alt+Shift+Up`; an empty field removes a binding. Global shortcuts are disabled by default, work only while the application runs, including in the tray, and changes require **OK**. Duplicate, invalid or occupied combinations report an error instead of silently saving. **Restore default settings** restores bindings and disables shortcuts after confirmation and OK. Default `Ctrl+Alt+Shift` combinations with `Up`/`Down` adjust volume, `Right`/`Left` adjust subwoofer gain, `M` toggles mute, `P` toggles power and `Y` shows the window; other actions are unassigned. Ordinary typing keys, Shift-only combinations and reserved system shortcuts are not captured.
+
+**Controls and feedback** provides independent options for announcing application command results and **changes made outside the application** (off by default). The latter also works while hidden and includes level changes when sliders are configured. It does not repeat unchanged readings or the first reading after connection. Bluetooth does not identify whether the remote, phone or panel made a change; changes during an application command may be announced with its result. Background polling occurs approximately every second, so rapid intermediate changes may not be individually announced. A BLE connection and a screen reader supporting UI Automation notifications remain required.
 
 ## Connection and defaults
 
@@ -106,13 +115,13 @@ Each saved device can have **multiple named sound profiles**: mode, Clear Voice,
 
 - **Tab / Shift+Tab** — controls and visible parameter readouts; **Space, Enter and arrows** — standard control interaction.
 - Enter a profile list or a saved or discovered device list with **one Tab press**; **arrow keys** immediately change selection without another Tab. The next Tab leaves the list.
-- **Ctrl+Tab** — switch main-window tabs or the six Settings tabs, depending on the active window. Arrow keys on a header select a tab; Tab enters its content.
+- **Ctrl+Tab** — switch main-window tabs or the seven Settings tabs, depending on the active window. Arrow keys on a header select a tab; Tab enters its content.
 - Sliders: arrows step by 1; **Page Up / Page Down** changes volume by 5 and subwoofer by 1; **Home / End** selects minimum/maximum.
 - **Ctrl + plus/minus** — volume; **Alt + plus/minus** — subwoofer; numeric-keypad keys also work.
 - **Alt** — menus, which are excluded from the normal Tab / Shift+Tab sequence; **Win+B** — notification area; **Shift+F10** — selected icon's menu.
 - **Escape** — auxiliary window or open dropdown, not the main window or mandatory setup. In Settings it acts like Cancel: unsaved changes require confirmation before being discarded.
 
-The optional **Application sections** and **Settings categories** tab-group names follow the hints setting and disappear when hints are disabled and confirmed with OK. Individual main-window tab names and all six Settings tab names remain available.
+The optional **Application sections** and **Settings categories** tab-group names follow the hints setting and disappear when hints are disabled and confirmed with OK. Individual main-window tab names and all seven Settings tab names remain available.
 
 UI Automation exposes names, labels, states and notifications; important information does not rely on colour alone. **Full NVDA speech evaluation is not confirmed.**
 
@@ -135,7 +144,7 @@ On Windows with the **.NET 10 SDK**, from the source root:
 dotnet test YamahaRemote.slnx -c Release
 ```
 
-The script preserves previous builds in `D:\work\Snapshots\<project folder name>`, protects configuration and creates `installfiles` with the EXE and `langs`. It uses `SelfContained=false`, `PublishSelfContained=false`, `UseAppHost=true`, `OutputType=WinExe`, without Native AOT. Do not run concurrent operations that modify the same build outputs.
+The script moves ordinary superseded build files to `D:\work\Trash\<project folder name>`, without deleting them and with checksum verification. `Snapshots` is reserved for material with a concrete current purpose and reassessment condition. The script protects configuration and creates `installfiles` with the EXE and `langs`. It uses `SelfContained=false`, `PublishSelfContained=false`, `UseAppHost=true`, `OutputType=WinExe`, without Native AOT. Do not run concurrent operations that modify the same build outputs.
 
 Results apply to a particular build. **Managed tests do not confirm physical power cycles, every command's hardware effects or full NVDA speech.** There is no guarantee of zero bugs or compatibility with every adapter. Report the version and reproduction steps, and remove private data from diagnostics.
 

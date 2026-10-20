@@ -74,7 +74,8 @@ public sealed class ValueDisplayPreferencesTests
             loaded.SavedDevices.Select(device => (device.Name, device.Address, device.SoundProfile)));
         Assert.Single(loaded.SavedDevices[0].SavedSoundProfiles);
         Assert.Empty(loaded.SavedDevices[1].SavedSoundProfiles);
-        Assert.Equal(original, loaded with { HiddenRows = original.HiddenRows, SavedDevices = original.SavedDevices });
+        Assert.Equal(original.Hotkeys, loaded.Hotkeys);
+        Assert.Equal(original, loaded with { HiddenRows = original.HiddenRows, SavedDevices = original.SavedDevices, Hotkeys = original.Hotkeys });
         Assert.Equal(beforeLoad, File.ReadAllBytes(path));
     }
 

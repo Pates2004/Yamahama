@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Automation;
@@ -18,9 +19,10 @@ internal sealed class TrayController : IDisposable
     private readonly Icon _ownedIcon;
     private readonly Dictionary<MenuItem, string> _labels = [];
     private readonly Dictionary<SoundbarCommand, MenuItem> _commands = [];
-    private readonly List<(MenuItem Item, Func<SoundbarState, bool> Read)> _toggles = [];
+    private readonly List<(ConfirmedToggleMenuItem Item, Func<SoundbarState, bool> Read)> _toggles = [];
     private readonly MenuItem _status;
     private readonly MenuItem _inputs;
+    private readonly MenuItem _brightness;
     private readonly MenuItem _volume;
     private readonly MenuItem _subwoofer;
     private readonly MenuItem _volumeUp;
@@ -28,6 +30,10 @@ internal sealed class TrayController : IDisposable
     private readonly MenuItem _refresh;
     private readonly MenuItem _disconnect;
     private readonly MenuItem _cancel;
+    private readonly Dictionary<int, ConfirmedToggleMenuItem> _volumeLevels;
+    private readonly Dictionary<int, ConfirmedToggleMenuItem> _subwooferLevels;
+    private LevelControlMode _volumeMode = LevelControlMode.Buttons;
+    private LevelControlMode _subwooferMode = LevelControlMode.Buttons;
     private SoundbarState? _state;
     private bool _connected;
     private bool _busy;
@@ -38,7 +44,8 @@ internal sealed class TrayController : IDisposable
     internal bool Visible => !_disposed && _icon.Visible;
 
     internal TrayController(Action restore, Action exit, Func<SoundbarCommand, Task> send,
-        Func<int, Task> changeVolume, Action refresh, Action disconnect, Action cancel)
+        Func<int, Task> changeVolume, Action refresh, Action disconnect, Action cancel,
+        Func<int, Task> setVolume, Func<int, Task> setSubwoofer)
     {
         _ownedIcon = (Icon)SystemIcons.Application.Clone();
         _icon = new Forms.NotifyIcon { Icon = _ownedIcon, Text = "Yamahama" };
@@ -54,11 +61,21 @@ internal sealed class TrayController : IDisposable
         AddToggle("Control.BassExtension", SoundbarCommand.BassExtensionOn, SoundbarCommand.BassExtensionOff, state => state.BassExtension);
         AddGroup("Tray.Modes", [SoundbarCommand.Stereo, SoundbarCommand.Standard, SoundbarCommand.Movie3D, SoundbarCommand.Game]);
         _inputs = AddGroup("Tray.Inputs", [SoundbarCommand.InputTv, SoundbarCommand.InputOptical, SoundbarCommand.InputBluetooth, SoundbarCommand.InputAnalog]);
-        AddGroup("Tray.Brightness", [SoundbarCommand.IndicatorsBright, SoundbarCommand.IndicatorsDim, SoundbarCommand.IndicatorsOff]);
+        _brightness = AddGroup("Tray.Brightness", [SoundbarCommand.IndicatorsBright, SoundbarCommand.IndicatorsDim, SoundbarCommand.IndicatorsOff]);
         _volume = AddItem(Menu.Items, "Tray.Volume");
-        _volumeUp = AddItem(_volume.Items, "Command.IncreaseVolume", async (_, _) => { if (_canAdjust) await changeVolume(1); });
-        _volumeDown = AddItem(_volume.Items, "Command.DecreaseVolume", async (_, _) => { if (_canAdjust) await changeVolume(-1); });
+        _volumeUp = AddItem(_volume.Items, "Command.IncreaseVolume", async (sender, _) =>
+        {
+            if (!_disposed && _canAdjust && ((MenuItem)sender).IsEnabled)
+                await changeVolume(1);
+        });
+        _volumeDown = AddItem(_volume.Items, "Command.DecreaseVolume", async (sender, _) =>
+        {
+            if (!_disposed && _canAdjust && ((MenuItem)sender).IsEnabled)
+                await changeVolume(-1);
+        });
         _subwoofer = AddGroup("Tray.Subwoofer", [SoundbarCommand.SubwooferUp, SoundbarCommand.SubwooferDown]);
+        _volumeLevels = CreateLevelItems("Tray.Volume", 0, 50, setVolume);
+        _subwooferLevels = CreateLevelItems("Tray.Subwoofer", -4, 4, setSubwoofer);
         Menu.Items.Add(new Separator());
         _refresh = AddItem(Menu.Items, "Control.RefreshName", (_, _) => refresh());
         _disconnect = AddItem(Menu.Items, "Connection.DisconnectName", (_, _) => disconnect());
@@ -74,11 +91,12 @@ internal sealed class TrayController : IDisposable
             MenuItem group = AddItem(Menu.Items, label);
             foreach (SoundbarCommand command in commands)
             {
-                MenuItem item = AddItem(group.Items, CommandKey(command), async (_, _) =>
+                MenuItem item = AddItem(group.Items, CommandKey(command), async (sender, _) =>
                 {
-                    if (_canAdjust)
+                    if (!_disposed && _canAdjust && ((MenuItem)sender).IsEnabled)
                         await send(command);
-                });
+                }, command is SoundbarCommand.SubwooferUp or SoundbarCommand.SubwooferDown
+                    ? new MenuItem() : new ConfirmedToggleMenuItem());
                 _commands.Add(command, item);
             }
             return group;
@@ -86,15 +104,62 @@ internal sealed class TrayController : IDisposable
 
         void AddToggle(string label, SoundbarCommand enabled, SoundbarCommand disabled, Func<SoundbarState, bool> read)
         {
-            MenuItem item = AddItem(Menu.Items, label, async (sender, _) =>
+            ConfirmedToggleMenuItem item = new();
+            AddItem(Menu.Items, label, async (_, _) =>
             {
                 SoundbarState? confirmedState = _state;
                 bool confirmedValue = confirmedState is not null && read(confirmedState);
-                ((MenuItem)sender).IsChecked = confirmedValue;
-                if (!_disposed && _canAdjust && confirmedState is not null)
+                if (!_disposed && _canAdjust && item.IsEnabled && confirmedState is not null)
                     await send(confirmedValue ? disabled : enabled);
-            }, new ConfirmedToggleMenuItem { IsCheckable = true });
+            }, item);
             _toggles.Add((item, read));
+        }
+
+        Dictionary<int, ConfirmedToggleMenuItem> CreateLevelItems(string key, int minimum, int maximum, Func<int, Task> setLevel)
+        {
+            Dictionary<int, ConfirmedToggleMenuItem> items = [];
+            foreach (int target in Enumerable.Range(minimum, maximum - minimum + 1))
+            {
+                ConfirmedToggleMenuItem item = new() { Tag = target };
+                AutomationProperties.SetAutomationId(item, key + ".Level." + target.ToString(CultureInfo.InvariantCulture));
+                item.Click += async (_, _) =>
+                {
+                    if (!_disposed && _canAdjust && item.IsEnabled)
+                        await setLevel(target);
+                };
+                items.Add(target, item);
+            }
+            return items;
+        }
+    }
+
+    internal void ApplyLevelPreferences(LevelControlMode volumeMode, LevelControlMode subwooferMode)
+    {
+        if (_disposed)
+            return;
+        if (!Enum.IsDefined(volumeMode))
+            throw new ArgumentOutOfRangeException(nameof(volumeMode));
+        if (!Enum.IsDefined(subwooferMode))
+            throw new ArgumentOutOfRangeException(nameof(subwooferMode));
+        if (_volumeMode == volumeMode && _subwooferMode == subwooferMode)
+            return;
+        Menu.IsOpen = false;
+        if (_volumeMode != volumeMode)
+        {
+            _volume.Items.Clear();
+            foreach (MenuItem item in volumeMode == LevelControlMode.Slider
+                ? _volumeLevels.Values.Cast<MenuItem>() : new[] { _volumeUp, _volumeDown })
+                _volume.Items.Add(item);
+            _volumeMode = volumeMode;
+        }
+        if (_subwooferMode != subwooferMode)
+        {
+            _subwoofer.Items.Clear();
+            foreach (MenuItem item in subwooferMode == LevelControlMode.Slider
+                ? _subwooferLevels.Values.Cast<MenuItem>()
+                : new[] { _commands[SoundbarCommand.SubwooferUp], _commands[SoundbarCommand.SubwooferDown] })
+                _subwoofer.Items.Add(item);
+            _subwooferMode = subwooferMode;
         }
     }
 
@@ -147,8 +212,21 @@ internal sealed class TrayController : IDisposable
             string label = Localization.Text(key).Replace("_", string.Empty, StringComparison.Ordinal);
             SetLabel(item, label);
         }
+        RefreshLevelLabels(_volumeLevels, "Tray.Volume");
+        RefreshLevelLabels(_subwooferLevels, "Tray.Subwoofer");
         Menu.FontSize = System.Windows.SystemFonts.MessageFontSize * textScale / 100.0;
         RefreshPresentation();
+    }
+
+    private static void RefreshLevelLabels(Dictionary<int, ConfirmedToggleMenuItem> levels, string key)
+    {
+        foreach ((int level, ConfirmedToggleMenuItem item) in levels)
+        {
+            string value = level.ToString(Localization.Culture);
+            item.Header = value;
+            AutomationProperties.SetName(item, Localization.Text("Tray.GroupValue",
+                Localization.Text(key).Replace("_", string.Empty, StringComparison.Ordinal), value));
+        }
     }
 
     internal void UpdateState(bool connected, SoundbarState? state, bool busy, bool canCancel, bool closing)
@@ -163,11 +241,10 @@ internal sealed class TrayController : IDisposable
         bool standby = state is { Power: false };
         string standbyStatus = Localization.Text("State.PowerOffEditBlocked");
         string unknownStatus = Localization.Text(connected ? "Tray.StateUnknown" : "Tray.NotConnected");
-        foreach ((MenuItem item, Func<SoundbarState, bool> read) in _toggles)
+        foreach ((ConfirmedToggleMenuItem item, Func<SoundbarState, bool> read) in _toggles)
         {
-            ((ConfirmedToggleMenuItem)item).ConfirmedValue = state is null ? null : read(state);
+            item.ConfirmedValue = state is null ? null : read(state);
             item.IsEnabled = _canAdjust;
-            item.IsChecked = state is not null && read(state);
             AutomationProperties.SetItemStatus(item, state is null ? unknownStatus
                 : standby && _labels[item] != "Control.Power" ? standbyStatus
                 : Localization.Text(read(state) ? "Tray.EnabledState" : "Tray.DisabledState"));
@@ -180,18 +257,35 @@ internal sealed class TrayController : IDisposable
                 SoundbarCommand.SubwooferDown => state!.Subwoofer is > -4 and <= 4,
                 _ => true
             });
-            item.IsChecked = state is not null && Matches(command, state);
+            if (item is ConfirmedToggleMenuItem selection)
+                selection.ConfirmedValue = state is null || !IsSelectionKnown(command, state) ? null : Matches(command, state);
             AutomationProperties.SetItemStatus(item, state is null ? unknownStatus : standby ? standbyStatus
+                : item is ConfirmedToggleMenuItem { ConfirmedValue: null } ? Localization.Text("Readout.Unknown")
                 : item.IsChecked ? Localization.Text("Tray.SelectedState") : string.Empty);
         }
         _volumeUp.IsEnabled = _canAdjust && (standby || state!.Volume is >= 0 and < 50);
         _volumeDown.IsEnabled = _canAdjust && (standby || state!.Volume is > 0 and <= 50);
         AutomationProperties.SetItemStatus(_volumeUp, standby ? standbyStatus : string.Empty);
         AutomationProperties.SetItemStatus(_volumeDown, standby ? standbyStatus : string.Empty);
+        UpdateLevels(_volumeLevels, state?.Volume, 0, 50);
+        UpdateLevels(_subwooferLevels, state?.Subwoofer, -4, 4);
         _refresh.IsEnabled = connected && !busy && !closing;
         _disconnect.IsEnabled = connected && !busy && !closing;
         _cancel.IsEnabled = canCancel && !closing;
         RefreshPresentation();
+
+        void UpdateLevels(Dictionary<int, ConfirmedToggleMenuItem> levels, int? confirmed, int minimum, int maximum)
+        {
+            bool valid = confirmed is int value && value >= minimum && value <= maximum;
+            foreach ((int level, ConfirmedToggleMenuItem item) in levels)
+            {
+                item.ConfirmedValue = valid ? confirmed == level : null;
+                item.IsEnabled = _canAdjust && valid;
+                AutomationProperties.SetItemStatus(item, state is null ? unknownStatus
+                    : !valid ? Localization.Text("Readout.Unknown") : standby ? standbyStatus
+                    : item.IsChecked ? Localization.Text("Tray.SelectedState") : string.Empty);
+            }
+        }
     }
 
     private void RefreshPresentation()
@@ -202,6 +296,7 @@ internal sealed class TrayController : IDisposable
         SetLabel(_volume, presentation.VolumeLabel);
         SetLabel(_subwoofer, presentation.SubwooferLabel);
         SetLabel(_inputs, presentation.InputLabel);
+        SetLabel(_brightness, TrayPresentation.FormatBrightnessLabel(_connected, _state, Localization.Text));
         _icon.Text = presentation.Tooltip;
     }
 
@@ -255,11 +350,25 @@ internal sealed class TrayController : IDisposable
         _ => false
     };
 
+    private static bool IsSelectionKnown(SoundbarCommand command, SoundbarState state) => command switch
+    {
+        SoundbarCommand.InputTv or SoundbarCommand.InputOptical or SoundbarCommand.InputBluetooth or SoundbarCommand.InputAnalog
+            => Enum.IsDefined(state.Input),
+        SoundbarCommand.Stereo or SoundbarCommand.Standard or SoundbarCommand.Movie3D or SoundbarCommand.Game
+            => Enum.IsDefined(state.Mode) && state.Mode != SoundMode.Unknown,
+        SoundbarCommand.IndicatorsBright or SoundbarCommand.IndicatorsDim or SoundbarCommand.IndicatorsOff
+            => Enum.IsDefined(state.Brightness),
+        _ => false
+    };
+
     public void Dispose()
     {
         if (_disposed)
             return;
         _disposed = true;
+        _canAdjust = false;
+        foreach (MenuItem item in _labels.Keys.Concat(_volumeLevels.Values).Concat(_subwooferLevels.Values))
+            item.IsEnabled = false;
         Menu.IsOpen = false;
         Menu.Items.Clear();
         _icon.Visible = false;

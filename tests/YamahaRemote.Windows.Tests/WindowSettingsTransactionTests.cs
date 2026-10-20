@@ -75,7 +75,7 @@ public sealed partial class WindowFlowTests
             SectionWindow settings = window.OpenSettingsWindow();
             await SettleReadoutWindowAsync(window);
             Assert.Same(settings, window.OpenSettingsWindow());
-            Assert.Equal(new[] { "AppearanceSettingsTab", "MainScreenSettingsTab", "ControlsSettingsTab", "StartupSettingsTab", "ClosingSettingsTab", "ProfilesSettingsTab" },
+            Assert.Equal(new[] { "AppearanceSettingsTab", "MainScreenSettingsTab", "ControlsSettingsTab", "HotkeysSettingsTab", "StartupSettingsTab", "ClosingSettingsTab", "ProfilesSettingsTab" },
                 Control<TabControl>("SettingsTabs").Items.Cast<TabItem>().Select(tab => tab.Name));
             byte[] before = File.ReadAllBytes(path);
             double fontSize = window.FontSize;

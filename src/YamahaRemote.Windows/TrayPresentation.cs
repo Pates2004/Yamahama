@@ -8,6 +8,20 @@ internal sealed record TrayPresentation(
 {
     internal const int TooltipLimit = 127;
 
+    internal static string FormatBrightnessLabel(bool connected, SoundbarState? state,
+        Func<string, object[], string> text)
+    {
+        string valueKey = !connected || state is null ? "Readout.UnknownFeminine" : state.Brightness switch
+        {
+            IndicatorBrightness.Bright => "Brightness.Bright",
+            IndicatorBrightness.Dim => "Brightness.Dim",
+            IndicatorBrightness.Off => "Brightness.Off",
+            _ => "Brightness.Unknown"
+        };
+        return text("Tray.GroupValue",
+            [text("Tray.Brightness", []).Replace("_", string.Empty, StringComparison.Ordinal), text(valueKey, [])]);
+    }
+
     internal static TrayPresentation Create(bool connected, SoundbarState? state, bool busy,
         Func<string, object[], string> text, CultureInfo culture)
     {

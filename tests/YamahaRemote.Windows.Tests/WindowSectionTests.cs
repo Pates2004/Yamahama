@@ -527,7 +527,7 @@ public sealed partial class WindowFlowTests
     private static void AssertStartupSettingsLayout(MainWindow owner, SectionWindow section)
     {
         TabControl settingsTabs = Assert.IsType<TabControl>(owner.FindName("SettingsTabs"));
-        string[] tabNames = ["AppearanceSettingsTab", "MainScreenSettingsTab", "ControlsSettingsTab", "StartupSettingsTab", "ClosingSettingsTab", "ProfilesSettingsTab"];
+        string[] tabNames = ["AppearanceSettingsTab", "MainScreenSettingsTab", "ControlsSettingsTab", "HotkeysSettingsTab", "StartupSettingsTab", "ClosingSettingsTab", "ProfilesSettingsTab"];
         Assert.Equal(tabNames, settingsTabs.Items.Cast<TabItem>().Select(tab => tab.Name));
         Assert.All(settingsTabs.Items.Cast<TabItem>(), tab => Assert.NotEmpty(SectionPeer(tab).GetName()));
         foreach (string notice in new[] { "StartupSafetyNotice", "PowerProtectionSafetyNotice" })

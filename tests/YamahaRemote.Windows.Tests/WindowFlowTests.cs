@@ -18,6 +18,7 @@ public sealed partial class WindowFlowTests
     [Fact]
     public async Task ControlsSendVerifiedCommandsAndDoNotInventState()
     {
+        string currentScenario = "Starting WPF dispatcher";
         TaskCompletionSource completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
         Thread thread = new(() =>
         {
@@ -44,25 +45,50 @@ public sealed partial class WindowFlowTests
                         Localization.Initialize();
                         Localization.SetLanguage("pl");
                         ExerciseFirstRun();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseSingleInstanceRestorationAsync));
                         await ExerciseSingleInstanceRestorationAsync();
                         Localization.SetLanguage("pl");
+                        Volatile.Write(ref currentScenario, nameof(ExerciseSettingsRefinementsAsync));
                         await ExerciseSettingsRefinementsAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseFocusRefinementsAsync));
                         await ExerciseFocusRefinementsAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseSectionsAsync));
                         await ExerciseSectionsAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseExitConfirmationAsync));
                         await ExerciseExitConfirmationAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseFeedbackAsync));
                         await ExerciseFeedbackAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseExternalFeedbackAsync));
+                        await ExerciseExternalFeedbackAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseGlobalHotkeysAsync));
+                        await ExerciseGlobalHotkeysAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseReadoutModesAsync));
                         await ExerciseReadoutModesAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseLevelsAsync));
                         await ExerciseLevelsAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseStandbyEditingAsync));
                         await ExerciseStandbyEditingAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseAutoConnectAsync));
                         await ExerciseAutoConnectAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExercisePowerProtectionAsync));
                         await ExercisePowerProtectionAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseExitPowerAsync));
                         await ExerciseExitPowerAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseDeviceStorageAsync));
                         await ExerciseDeviceStorageAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseTrayAsync));
                         await ExerciseTrayAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseTrayControlsAsync));
+                        await ExerciseTrayControlsAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseStartupAndResetAsync));
                         await ExerciseStartupAndResetAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseSoundProfilesAsync));
                         await ExerciseSoundProfilesAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseNamedSoundProfilesAsync));
                         await ExerciseNamedSoundProfilesAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseSettingsTransactionsAsync));
                         await ExerciseSettingsTransactionsAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExerciseWindowAsync));
                         await ExerciseWindowAsync();
                         completion.TrySetResult();
                     }
@@ -84,7 +110,11 @@ public sealed partial class WindowFlowTests
         }) { IsBackground = true, Name = "WPF integration validation" };
         thread.SetApartmentState(ApartmentState.STA);
         thread.Start();
-        await completion.Task.WaitAsync(TimeSpan.FromSeconds(120));
+        try { await completion.Task.WaitAsync(TimeSpan.FromSeconds(240)); }
+        catch (TimeoutException exception)
+        {
+            throw new TimeoutException("WPF scenario timed out: " + Volatile.Read(ref currentScenario), exception);
+        }
         Assert.True(thread.Join(TimeSpan.FromSeconds(5)), "The WPF test dispatcher did not exit.");
     }
 
@@ -142,6 +172,8 @@ public sealed partial class WindowFlowTests
             Assert.False(Control<CheckBox>(dialog, "ShowOperationMessagesChoice").IsChecked);
             Assert.Equal(ValueDisplayMode.StaticText, Assert.IsType<ComboBoxItem>(Control<ComboBox>(dialog, "ValueDisplayModeChoice").SelectedItem).Tag);
             Assert.True(Control<CheckBox>(dialog, "AnnounceStateChangesChoice").IsChecked);
+            Assert.False(Control<CheckBox>(dialog, "AnnounceExternalStateChangesChoice").IsChecked);
+            Control<CheckBox>(dialog, "AnnounceExternalStateChangesChoice").IsChecked = true;
             Control<CheckBox>(dialog, "ShowOperationMessagesChoice").IsChecked = true;
             Control<ComboBox>(dialog, "ValueDisplayModeChoice").SelectedIndex = 0;
             Control<CheckBox>(dialog, "AnnounceStateChangesChoice").IsChecked = false;
@@ -158,6 +190,7 @@ public sealed partial class WindowFlowTests
         Assert.True(saved.ShowOperationMessages);
         Assert.Equal(ValueDisplayMode.ReadOnlyFields, saved.ValueDisplayMode);
         Assert.False(saved.AnnounceStateChanges);
+        Assert.True(saved.AnnounceExternalStateChanges);
         FirstRunWindow saveFailure = RunDialog(dialog =>
         {
             Control<ComboBox>(dialog, "LanguageChoice").SelectedIndex = 0;
@@ -695,7 +728,8 @@ public sealed partial class WindowFlowTests
     private static async Task ExerciseTrayAsync()
     {
         string path = ConfigurationTests.TestPath("tray-flow.json");
-        Assert.True(new UiPreferences { ConfirmExit = false, FirstRunCompleted = true, Language = "en", Theme = "Dark", ShowHints = false }.TrySave(out _, path));
+        Assert.True(new UiPreferences { ConfirmExit = false, FirstRunCompleted = true, Language = "en", Theme = "Dark", ShowHints = false,
+            VolumeControlMode = LevelControlMode.Buttons, SubwooferControlMode = LevelControlMode.Buttons }.TrySave(out _, path));
         Localization.SetLanguage("en");
         FakeSoundbarController controller = new();
         MainWindow window = new(controller, preferencesPath: path)

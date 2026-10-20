@@ -193,13 +193,13 @@ public sealed partial class WindowFlowTests
     private static void AssertRefinementSettingsLayout(MainWindow window)
     {
         T Control<T>(string name) where T : FrameworkElement => ReadoutControl<T>(window, name);
-        string[] scopes = ["Appearance", "MainScreen", "Controls", "Startup", "Closing", "Profiles"];
+        string[] scopes = ["Appearance", "MainScreen", "Controls", "Hotkeys", "Startup", "Closing", "Profiles"];
         Assert.Equal(scopes.Select(scope => scope + "SettingsTab"),
             Control<TabControl>("SettingsTabs").Items.Cast<TabItem>().Select(tab => tab.Name));
         foreach (string scope in scopes)
         {
             TabItem tab = Control<TabItem>(scope + "SettingsTab");
-            string title = Localization.Text("Settings." + scope + "Tab");
+            string title = Localization.Text(scope == "Hotkeys" ? "Hotkeys.Tab" : "Settings." + scope + "Tab");
             Assert.Equal(title, AutomationProperties.GetName(tab));
             Assert.Equal(title, tab.Header);
             if (scope == "Profiles")

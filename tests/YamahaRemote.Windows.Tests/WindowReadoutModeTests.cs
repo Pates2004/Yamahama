@@ -147,12 +147,12 @@ public sealed partial class WindowFlowTests
                 await WaitForAsync(() => controller.State!.Volume == 21 && !Control<Button>("CancelButton").IsEnabled);
                 await SettleReadoutWindowAsync(window);
                 Assert.Equal(Localization.Text("Feedback.Volume", "21"), Assert.Single(announcements));
-                Control<CheckBox>("AnnounceStateChangesCheckBox").IsChecked = false;
+                Control<CheckBox>("AnnounceExternalStateChangesCheckBox").IsChecked = false;
                 Assert.True(window.CommitSettings());
                 controller.PublishState(controller.State! with { ClearVoice = true });
                 await SettleReadoutWindowAsync(window);
                 Assert.Single(announcements);
-                Control<CheckBox>("AnnounceStateChangesCheckBox").IsChecked = true;
+                Control<CheckBox>("AnnounceExternalStateChangesCheckBox").IsChecked = true;
                 Assert.True(window.CommitSettings());
                 controller.PublishState(controller.State! with { ClearVoice = false });
                 await SettleReadoutWindowAsync(window);

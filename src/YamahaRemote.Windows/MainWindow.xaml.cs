@@ -67,10 +67,12 @@ public partial class MainWindow : Window
     internal MainWindow(ISoundbarController controller, Action<string>? copySupportAddress, string? preferencesPath,
         IStartupRegistration startupRegistration, Func<string, string, bool>? confirm = null,
         Action<string>? announceState = null,
-        TimeProvider? powerProtectionClock = null, Action<string>? showShutdownWarning = null)
+        TimeProvider? powerProtectionClock = null, Action<string>? showShutdownWarning = null,
+        IHotkeyBackend? hotkeyBackend = null)
     {
         ArgumentNullException.ThrowIfNull(controller);
         _controller = controller;
+        _hotkeyBackend = hotkeyBackend;
         _showShutdownWarning = showShutdownWarning ?? (message => MessageBox.Show(this,
             message, Localization.Text("Shutdown.Title"), MessageBoxButton.OK, MessageBoxImage.Warning));
         _powerProtectionPolicy = new(powerProtectionClock ?? TimeProvider.System);
@@ -136,6 +138,13 @@ public partial class MainWindow : Window
             entry.RefreshDisplayName();
         RenderReadouts();
         ApplyBehaviorPreferences();
+        if (_hotkeyFields.Count > 0)
+        {
+            bool wasApplying = _applyingPreferences;
+            _applyingPreferences = true;
+            try { PopulateHotkeyControls(); }
+            finally { _applyingPreferences = wasApplying; }
+        }
         UpdateProfileControls();
     }
 
@@ -476,7 +485,7 @@ public partial class MainWindow : Window
             important = true;
         }
         bool restoreFocus = interactionGeneration == _focusInteractionGeneration
-            && sectionGeneration == _sectionFocusGeneration && IsVisible;
+            && sectionGeneration == _sectionFocusGeneration && IsVisible && _globalHotkeyDepth == 0;
         SetStatus(message, focus: important && restoreFocus, important: important);
         if (!succeeded)
             return;
@@ -590,7 +599,7 @@ public partial class MainWindow : Window
 
         RenderReadouts();
         UpdateAvailability();
-        AnnounceConfirmedState();
+        AnnounceConfirmedState(deviceUpdate: !_powerProtectionMutationInProgress);
     }
 
     private void InvalidateReadout()
@@ -733,6 +742,10 @@ public partial class MainWindow : Window
         ShowOperationMessagesCheckBox.IsEnabled = available;
         ValueDisplayModeChoice.IsEnabled = available;
         AnnounceStateChangesCheckBox.IsEnabled = available;
+        AnnounceExternalStateChangesCheckBox.IsEnabled = available;
+        GlobalHotkeysCheckBox.IsEnabled = available;
+        HotkeyRows.IsEnabled = available;
+        ResetHotkeysSettingsButton.IsEnabled = available;
         CloseToTrayCheckBox.IsEnabled = available;
         SettingsTextScaleChoice.IsEnabled = available;
         StartWithWindowsCheckBox.IsEnabled = available;
@@ -887,7 +900,8 @@ public partial class MainWindow : Window
             AutoApplySelections = AutoApplySelectionsCheckBox.IsChecked == true,
             ShowHints = ShowHintsCheckBox.IsChecked == true,
             ShowOperationMessages = ShowOperationMessagesCheckBox.IsChecked == true,
-            AnnounceStateChanges = AnnounceStateChangesCheckBox.IsChecked == true
+            AnnounceStateChanges = AnnounceStateChangesCheckBox.IsChecked == true,
+            AnnounceExternalStateChanges = AnnounceExternalStateChangesCheckBox.IsChecked == true
         });
     }
 
@@ -902,6 +916,7 @@ public partial class MainWindow : Window
             ValueDisplayModeChoice.SelectedItem = ValueDisplayModeChoice.Items.Cast<ComboBoxItem>()
                 .First(item => item.Tag is ValueDisplayMode mode && mode == SettingsPreferences.ValueDisplayMode);
             AnnounceStateChangesCheckBox.IsChecked = SettingsPreferences.AnnounceStateChanges;
+            AnnounceExternalStateChangesCheckBox.IsChecked = SettingsPreferences.AnnounceExternalStateChanges;
             KeepPoweredOnCheckBox.IsChecked = SettingsPreferences.KeepPoweredOn;
             UpdatePowerProtectionMonitoring();
             ApplyLevelPreferences();
@@ -1054,6 +1069,9 @@ public partial class MainWindow : Window
             _checkingExit = false;
         }
         _closing = true;
+        try { _globalHotkeys?.Dispose(); }
+        catch (HotkeyRegistrationException exception) { _shutdownOperationWarning = DescribeHotkeyError(exception.Error); }
+        _globalHotkeys = null;
         _powerProtectionTimer.Stop();
         _powerProtectionTimer.Tick -= OnPowerProtectionTick;
         _tray?.Dispose();
