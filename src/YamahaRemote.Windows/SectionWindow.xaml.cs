@@ -93,12 +93,12 @@ public partial class SectionWindow : Window
         UsageHints.SetEnabled(this, preferences.ShowHints);
     }
 
-    internal void UpdateStatus(string message, bool visible)
+    internal void UpdateStatus(string message, bool visible, bool spokenDirectly = false)
     {
+        AutomationProperties.SetLiveSetting(SectionStatusMessage, visible && !spokenDirectly ? AutomationLiveSetting.Polite : AutomationLiveSetting.Off);
         SectionStatusMessage.Text = message;
         SectionStatusMessage.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         AutomationProperties.SetName(SectionStatusMessage, Localization.Text("Status.MessagePrefix") + message);
-        AutomationProperties.SetLiveSetting(SectionStatusMessage, visible ? AutomationLiveSetting.Polite : AutomationLiveSetting.Off);
     }
 
     internal void AnnounceStatus()

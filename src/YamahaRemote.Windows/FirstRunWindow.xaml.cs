@@ -28,6 +28,9 @@ public partial class FirstRunWindow : Window
             .First(item => item.Tag is ValueDisplayMode mode && mode == configuration.ValueDisplayMode);
         AnnounceStateChangesChoice.IsChecked = configuration.AnnounceStateChanges;
         AnnounceExternalStateChangesChoice.IsChecked = configuration.AnnounceExternalStateChanges;
+        PrismStateChangesChoice.IsChecked = configuration.UsePrismForStateChanges;
+        PrismOperationsChoice.IsChecked = configuration.UsePrismForOperationMessages;
+        PrismImportantChoice.IsChecked = configuration.UsePrismForImportantMessages;
         UsageHints.SetEnabled(this, configuration.ShowHints);
         _initialized = true;
     }
@@ -79,6 +82,9 @@ public partial class FirstRunWindow : Window
             ValueDisplayMode = mode,
             AnnounceStateChanges = AnnounceStateChangesChoice.IsChecked == true,
             AnnounceExternalStateChanges = AnnounceExternalStateChangesChoice.IsChecked == true,
+            UsePrismForStateChanges = PrismStateChangesChoice.IsChecked == true,
+            UsePrismForOperationMessages = PrismOperationsChoice.IsChecked == true,
+            UsePrismForImportantMessages = PrismImportantChoice.IsChecked == true,
             TextScale = ((TextScaleOption)TextScaleChoice.SelectedItem).Value,
             FirstRunCompleted = true
         };

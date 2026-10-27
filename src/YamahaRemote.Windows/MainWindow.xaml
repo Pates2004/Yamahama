@@ -357,6 +357,14 @@
                                     <CheckBox x:Name="AnnounceExternalStateChangesCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Feedback.AnnounceExternalChanges}" Margin="3,8"
                                               Checked="OnBehaviorSettingsChanged" Unchecked="OnBehaviorSettingsChanged" AutomationProperties.Name="{DynamicResource Feedback.AnnounceExternalChanges}" />
                                     <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Feedback.ExternalExplanation}" TextWrapping="Wrap" Margin="3,8" />
+                                    <TextBlock Style="{StaticResource SectionHeadingStyle}" Text="{DynamicResource Speech.PrismHeading}" />
+                                    <CheckBox x:Name="PrismStateChangesCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Speech.PrismStateChanges}" Margin="3,8"
+                                              Checked="OnBehaviorSettingsChanged" Unchecked="OnBehaviorSettingsChanged" AutomationProperties.Name="{DynamicResource Speech.PrismStateChanges}" />
+                                    <CheckBox x:Name="PrismOperationsCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Speech.PrismOperations}" Margin="3,8"
+                                              Checked="OnBehaviorSettingsChanged" Unchecked="OnBehaviorSettingsChanged" AutomationProperties.Name="{DynamicResource Speech.PrismOperations}" />
+                                    <CheckBox x:Name="PrismImportantCheckBox" Style="{StaticResource WrappingCheckBoxStyle}" Content="{DynamicResource Speech.PrismImportant}" Margin="3,8"
+                                              Checked="OnBehaviorSettingsChanged" Unchecked="OnBehaviorSettingsChanged" AutomationProperties.Name="{DynamicResource Speech.PrismImportant}" />
+                                    <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Speech.PrismExplanation}" TextWrapping="Wrap" Margin="3,8" />
                                     <Button x:Name="ResetControlsSettingsButton" Content="{DynamicResource Settings.ResetTab}" HorizontalAlignment="Left" Margin="3,12,3,3"
                                             Click="OnResetSettingsTab" Tag="Controls" AutomationProperties.Name="{DynamicResource Settings.ResetTab}" />
                                     <TextBlock Style="{StaticResource UsageHintStyle}" Text="{DynamicResource Feedback.Explanation}" TextWrapping="Wrap" Margin="3,8" />

@@ -9,6 +9,7 @@ public partial class App : Application
     private SingleInstanceCoordinator? _singleInstance;
     private FirstRunWindow? _startupWindow;
     private bool _activationPending;
+    private PrismScreenReaderSpeech? _screenReaderSpeech;
 
     protected override void OnStartup(StartupEventArgs eventArgs)
     {
@@ -60,7 +61,9 @@ public partial class App : Application
                 configuration = setup.CompletedConfiguration;
             }
             Localization.SetLanguage(configuration.Language!);
-            MainWindow = new MainWindow(new BluetoothSoundbarController(), preferencesPath: configurationPath);
+            _screenReaderSpeech = new PrismScreenReaderSpeech();
+            MainWindow = new MainWindow(new BluetoothSoundbarController(), preferencesPath: configurationPath,
+                speakMessage: _screenReaderSpeech.TrySpeak);
             ShutdownMode = ShutdownMode.OnMainWindowClose;
             MainWindow.Show();
             if (_activationPending)
@@ -80,6 +83,8 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs eventArgs)
     {
+        _screenReaderSpeech?.Dispose();
+        _screenReaderSpeech = null;
         _singleInstance?.Dispose();
         _singleInstance = null;
         base.OnExit(eventArgs);

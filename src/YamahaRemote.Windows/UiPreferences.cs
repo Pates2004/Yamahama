@@ -68,6 +68,9 @@ internal sealed record UiPreferences
     public LevelControlMode SubwooferControlMode { get; init; } = LevelControlMode.Slider;
     public bool AnnounceStateChanges { get; init; } = true;
     public bool AnnounceExternalStateChanges { get; init; }
+    public bool UsePrismForStateChanges { get; init; } = true;
+    public bool UsePrismForOperationMessages { get; init; } = true;
+    public bool UsePrismForImportantMessages { get; init; } = true;
     public bool GlobalHotkeysEnabled { get; init; }
     public HotkeyBinding[] Hotkeys { get; init; } = HotkeyDefaults.Create().ToArray();
     public bool CloseToTray { get; init; }

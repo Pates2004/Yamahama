@@ -60,6 +60,8 @@ public sealed partial class WindowFlowTests
                         await ExerciseFeedbackAsync();
                         Volatile.Write(ref currentScenario, nameof(ExerciseExternalFeedbackAsync));
                         await ExerciseExternalFeedbackAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExercisePrismSpeechAsync));
+                        await ExercisePrismSpeechAsync();
                         Volatile.Write(ref currentScenario, nameof(ExerciseGlobalHotkeysAsync));
                         await ExerciseGlobalHotkeysAsync();
                         Volatile.Write(ref currentScenario, nameof(ExerciseReadoutModesAsync));
@@ -174,6 +176,11 @@ public sealed partial class WindowFlowTests
             Assert.True(Control<CheckBox>(dialog, "AnnounceStateChangesChoice").IsChecked);
             Assert.False(Control<CheckBox>(dialog, "AnnounceExternalStateChangesChoice").IsChecked);
             Control<CheckBox>(dialog, "AnnounceExternalStateChangesChoice").IsChecked = true;
+            Assert.True(Control<CheckBox>(dialog, "PrismStateChangesChoice").IsChecked);
+            Assert.True(Control<CheckBox>(dialog, "PrismOperationsChoice").IsChecked);
+            Assert.True(Control<CheckBox>(dialog, "PrismImportantChoice").IsChecked);
+            Control<CheckBox>(dialog, "PrismStateChangesChoice").IsChecked = false;
+            Control<CheckBox>(dialog, "PrismOperationsChoice").IsChecked = false;
             Control<CheckBox>(dialog, "ShowOperationMessagesChoice").IsChecked = true;
             Control<ComboBox>(dialog, "ValueDisplayModeChoice").SelectedIndex = 0;
             Control<CheckBox>(dialog, "AnnounceStateChangesChoice").IsChecked = false;
@@ -191,6 +198,9 @@ public sealed partial class WindowFlowTests
         Assert.Equal(ValueDisplayMode.ReadOnlyFields, saved.ValueDisplayMode);
         Assert.False(saved.AnnounceStateChanges);
         Assert.True(saved.AnnounceExternalStateChanges);
+        Assert.False(saved.UsePrismForStateChanges);
+        Assert.False(saved.UsePrismForOperationMessages);
+        Assert.True(saved.UsePrismForImportantMessages);
         FirstRunWindow saveFailure = RunDialog(dialog =>
         {
             Control<ComboBox>(dialog, "LanguageChoice").SelectedIndex = 0;

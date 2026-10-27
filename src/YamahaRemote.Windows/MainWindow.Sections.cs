@@ -100,7 +100,7 @@ public partial class MainWindow
             section.ConfigureSettings(CommitSettings, CancelSettings);
         _sectionWindows.Add(page, section);
         section.ApplyPreferences(_uiPreferences);
-        section.UpdateStatus(StatusMessage.Text, _statusIsImportant || _uiPreferences.ShowOperationMessages);
+        section.UpdateStatus(StatusMessage.Text, _statusIsImportant || _uiPreferences.ShowOperationMessages, _statusSpokenDirectly);
         bool navigationStarted = false;
         section.PreviewKeyDown += (_, _) => navigationStarted = true;
         section.PreviewMouseDown += (_, _) => navigationStarted = true;
@@ -158,7 +158,7 @@ public partial class MainWindow
         foreach (SectionWindow section in _sectionWindows.Values)
         {
             section.ApplyPreferences(_uiPreferences);
-            section.UpdateStatus(StatusMessage.Text, _statusIsImportant || _uiPreferences.ShowOperationMessages);
+            section.UpdateStatus(StatusMessage.Text, _statusIsImportant || _uiPreferences.ShowOperationMessages, _statusSpokenDirectly);
         }
     }
 

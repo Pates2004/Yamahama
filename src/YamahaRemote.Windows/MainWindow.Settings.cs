@@ -158,6 +158,9 @@ public partial class MainWindow
             ShowOperationMessagesCheckBox.IsChecked = preferences.ShowOperationMessages;
             AnnounceStateChangesCheckBox.IsChecked = preferences.AnnounceStateChanges;
             AnnounceExternalStateChangesCheckBox.IsChecked = preferences.AnnounceExternalStateChanges;
+            PrismStateChangesCheckBox.IsChecked = preferences.UsePrismForStateChanges;
+            PrismOperationsCheckBox.IsChecked = preferences.UsePrismForOperationMessages;
+            PrismImportantCheckBox.IsChecked = preferences.UsePrismForImportantMessages;
             Select(ValueDisplayModeChoice, preferences.ValueDisplayMode);
             Select(VolumeControlModeChoice, preferences.VolumeControlMode);
             Select(SubwooferControlModeChoice, preferences.SubwooferControlMode);
@@ -212,7 +215,10 @@ public partial class MainWindow
                 ShowOperationMessages = defaults.ShowOperationMessages,
                 ValueDisplayMode = defaults.ValueDisplayMode,
                 AnnounceStateChanges = defaults.AnnounceStateChanges,
-                AnnounceExternalStateChanges = defaults.AnnounceExternalStateChanges
+                AnnounceExternalStateChanges = defaults.AnnounceExternalStateChanges,
+                UsePrismForStateChanges = defaults.UsePrismForStateChanges,
+                UsePrismForOperationMessages = defaults.UsePrismForOperationMessages,
+                UsePrismForImportantMessages = defaults.UsePrismForImportantMessages
             },
             "Startup" => preferences with
             {

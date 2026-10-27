@@ -551,5 +551,10 @@
   "Hotkeys.ToggleMute": "Toggle mute",
   "Hotkeys.ToggleClearVoice": "Toggle Clear Voice",
   "Hotkeys.ToggleBassExtension": "Toggle Bass Extension",
-  "Hotkeys.ShowWindow": "Show Yamahama window"
+  "Hotkeys.ShowWindow": "Show Yamahama window",
+  "Speech.PrismHeading": "Prism — direct screen-reader speech",
+  "Speech.PrismStateChanges": "Use Prism for device-state announcements",
+  "Speech.PrismOperations": "Use Prism for operation announcements",
+  "Speech.PrismImportant": "Use Prism for errors and warnings",
+  "Speech.PrismExplanation": "Selected messages go directly to a running screen reader, including after Alt+Tab, minimizing or hiding the application in the tray. These options select the channel; they do not enable disabled state or operation announcements. When unchecked or Prism is unavailable, the existing UI Automation channel remains. Errors remain visible. The application does not start a standalone synthesizer or change the reader's voice, rate or volume."
 }

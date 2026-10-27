@@ -551,5 +551,10 @@
   "Hotkeys.ToggleMute": "Przełącz wyciszenie",
   "Hotkeys.ToggleClearVoice": "Przełącz wyraźny głos",
   "Hotkeys.ToggleBassExtension": "Przełącz wzmocnienie basu",
-  "Hotkeys.ShowWindow": "Pokaż okno Yamahama"
+  "Hotkeys.ShowWindow": "Pokaż okno Yamahama",
+  "Speech.PrismHeading": "Prism — bezpośrednia mowa czytnika ekranu",
+  "Speech.PrismStateChanges": "Używaj Prism do ogłaszania zmian stanu urządzenia",
+  "Speech.PrismOperations": "Używaj Prism do ogłaszania komunikatów operacji",
+  "Speech.PrismImportant": "Używaj Prism do ogłaszania błędów i ostrzeżeń",
+  "Speech.PrismExplanation": "Wybrane komunikaty trafiają bezpośrednio do działającego czytnika, również po przełączeniu Alt+Tab, zminimalizowaniu lub schowaniu programu w zasobniku. Te opcje wybierają kanał, a nie włączają wyłączonych ogłoszeń stanu lub komunikatów operacji. Po odznaczeniu albo gdy Prism jest niedostępny pozostaje dotychczasowy kanał UI Automation. Błędy nadal są widoczne. Program nie uruchamia osobnego syntezatora i nie zmienia głosu, tempa ani głośności czytnika."
 }

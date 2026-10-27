@@ -59,8 +59,10 @@ public partial class MainWindow : Window
     {
     }
 
-    public MainWindow(ISoundbarController controller, Action<string>? copySupportAddress = null, string? preferencesPath = null)
-        : this(controller, copySupportAddress, preferencesPath, new WindowsStartupRegistration(configurationPath: preferencesPath))
+    public MainWindow(ISoundbarController controller, Action<string>? copySupportAddress = null, string? preferencesPath = null,
+        Func<string, bool>? speakMessage = null)
+        : this(controller, copySupportAddress, preferencesPath, new WindowsStartupRegistration(configurationPath: preferencesPath),
+            speakMessage: speakMessage)
     {
     }
 
@@ -68,7 +70,7 @@ public partial class MainWindow : Window
         IStartupRegistration startupRegistration, Func<string, string, bool>? confirm = null,
         Action<string>? announceState = null,
         TimeProvider? powerProtectionClock = null, Action<string>? showShutdownWarning = null,
-        IHotkeyBackend? hotkeyBackend = null)
+        IHotkeyBackend? hotkeyBackend = null, Func<string, bool>? speakMessage = null)
     {
         ArgumentNullException.ThrowIfNull(controller);
         _controller = controller;
@@ -78,6 +80,7 @@ public partial class MainWindow : Window
         _powerProtectionPolicy = new(powerProtectionClock ?? TimeProvider.System);
         _powerProtectionTimer.Tick += OnPowerProtectionTick;
         _announceState = announceState;
+        _speakMessage = speakMessage;
         _copySupportAddress = copySupportAddress ?? Clipboard.SetText;
         _preferencesPath = preferencesPath;
         _startupRegistration = startupRegistration;
@@ -485,7 +488,7 @@ public partial class MainWindow : Window
             important = true;
         }
         bool restoreFocus = interactionGeneration == _focusInteractionGeneration
-            && sectionGeneration == _sectionFocusGeneration && IsVisible && _globalHotkeyDepth == 0;
+            && sectionGeneration == _sectionFocusGeneration && IsVisible && _globalHotkeyDepth == 0 && GetDialogOwner().IsActive;
         SetStatus(message, focus: important && restoreFocus, important: important);
         if (!succeeded)
             return;
@@ -743,6 +746,9 @@ public partial class MainWindow : Window
         ValueDisplayModeChoice.IsEnabled = available;
         AnnounceStateChangesCheckBox.IsEnabled = available;
         AnnounceExternalStateChangesCheckBox.IsEnabled = available;
+        PrismStateChangesCheckBox.IsEnabled = available;
+        PrismOperationsCheckBox.IsEnabled = available;
+        PrismImportantCheckBox.IsEnabled = available;
         GlobalHotkeysCheckBox.IsEnabled = available;
         HotkeyRows.IsEnabled = available;
         ResetHotkeysSettingsButton.IsEnabled = available;
@@ -774,32 +780,38 @@ public partial class MainWindow : Window
     private void SetStatus(string message, bool focus = false, bool important = false)
     {
         _statusIsImportant = focus || important;
-        StatusMessage.Text = message;
+        bool usePrism = _statusIsImportant ? _uiPreferences.UsePrismForImportantMessages : _uiPreferences.UsePrismForOperationMessages;
+        _statusSpokenDirectly = (_statusIsImportant || _uiPreferences.ShowOperationMessages) && usePrism && TrySpeakDirectly(message);
         UpdateOperationMessageVisibility();
+        StatusMessage.Text = message;
         AutomationProperties.SetName(StatusMessage, Localization.Text("Status.MessagePrefix") + message);
         ApplySectionPreferences();
         if (!_statusIsImportant && !_uiPreferences.ShowOperationMessages)
             return;
         if (GetDialogOwner() is SectionWindow section)
         {
-            section.AnnounceStatus();
-            if (focus && !_closing)
+            if (!_statusSpokenDirectly)
+                section.AnnounceStatus();
+            if (focus && !_closing && section.IsActive)
                 section.FocusStatus();
             return;
         }
-        if (!IsVisible && !_busy && !_closing)
+        if (!IsVisible && !_busy && !_closing && !_statusSpokenDirectly)
             _tray?.Notify(message, _statusIsImportant);
-        try
+        if (!_statusSpokenDirectly)
         {
-            AutomationPeer? peer = UIElementAutomationPeer.FromElement(StatusMessage)
-                ?? UIElementAutomationPeer.CreatePeerForElement(StatusMessage);
-            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+            try
+            {
+                AutomationPeer? peer = UIElementAutomationPeer.FromElement(StatusMessage)
+                    ?? UIElementAutomationPeer.CreatePeerForElement(StatusMessage);
+                peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+            }
+            catch (Exception exception) when (exception is InvalidOperationException or ElementNotAvailableException or COMException)
+            {
+                Trace.WriteLine(exception);
+            }
         }
-        catch (Exception exception) when (exception is InvalidOperationException or ElementNotAvailableException or COMException)
-        {
-            Trace.WriteLine(exception);
-        }
-        if (focus && !_closing)
+        if (focus && !_closing && IsActive)
             FocusOperationResult();
     }
 
@@ -901,7 +913,10 @@ public partial class MainWindow : Window
             ShowHints = ShowHintsCheckBox.IsChecked == true,
             ShowOperationMessages = ShowOperationMessagesCheckBox.IsChecked == true,
             AnnounceStateChanges = AnnounceStateChangesCheckBox.IsChecked == true,
-            AnnounceExternalStateChanges = AnnounceExternalStateChangesCheckBox.IsChecked == true
+            AnnounceExternalStateChanges = AnnounceExternalStateChangesCheckBox.IsChecked == true,
+            UsePrismForStateChanges = PrismStateChangesCheckBox.IsChecked == true,
+            UsePrismForOperationMessages = PrismOperationsCheckBox.IsChecked == true,
+            UsePrismForImportantMessages = PrismImportantCheckBox.IsChecked == true
         });
     }
 
@@ -917,6 +932,9 @@ public partial class MainWindow : Window
                 .First(item => item.Tag is ValueDisplayMode mode && mode == SettingsPreferences.ValueDisplayMode);
             AnnounceStateChangesCheckBox.IsChecked = SettingsPreferences.AnnounceStateChanges;
             AnnounceExternalStateChangesCheckBox.IsChecked = SettingsPreferences.AnnounceExternalStateChanges;
+            PrismStateChangesCheckBox.IsChecked = SettingsPreferences.UsePrismForStateChanges;
+            PrismOperationsCheckBox.IsChecked = SettingsPreferences.UsePrismForOperationMessages;
+            PrismImportantCheckBox.IsChecked = SettingsPreferences.UsePrismForImportantMessages;
             KeepPoweredOnCheckBox.IsChecked = SettingsPreferences.KeepPoweredOn;
             UpdatePowerProtectionMonitoring();
             ApplyLevelPreferences();

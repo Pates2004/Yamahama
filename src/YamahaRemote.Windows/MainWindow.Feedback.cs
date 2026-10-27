@@ -12,8 +12,10 @@ namespace YamahaRemote.Windows;
 public partial class MainWindow
 {
     private readonly Action<string>? _announceState;
+    private readonly Func<string, bool>? _speakMessage;
     private SoundbarState? _feedbackState;
     private bool _statusIsImportant;
+    private bool _statusSpokenDirectly;
 
     private void OnReadoutFocus(object sender, KeyboardFocusChangedEventArgs eventArgs)
     {
@@ -74,7 +76,7 @@ public partial class MainWindow
     {
         bool visible = _statusIsImportant || _uiPreferences.ShowOperationMessages;
         OperationMessageLabel.Visibility = StatusMessage.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-        AutomationProperties.SetLiveSetting(StatusMessage, visible ? AutomationLiveSetting.Polite : AutomationLiveSetting.Off);
+        AutomationProperties.SetLiveSetting(StatusMessage, visible && !_statusSpokenDirectly ? AutomationLiveSetting.Polite : AutomationLiveSetting.Off);
     }
 
     private void AnnounceConfirmedState(bool deviceUpdate = false)
@@ -96,6 +98,8 @@ public partial class MainWindow
             && (deviceUpdate || _globalHotkeyDepth != 0 || !IsLevelReportedBySlider(entry.Key))).Select(entry => entry.Text.Text));
         if (message.Length == 0)
             return;
+        if (_uiPreferences.UsePrismForStateChanges && TrySpeakDirectly(message))
+            return;
         if (_announceState is not null)
         {
             _announceState(message);
@@ -111,6 +115,18 @@ public partial class MainWindow
         catch (Exception exception) when (exception is InvalidOperationException or ElementNotAvailableException or COMException)
         {
             Trace.WriteLine(exception);
+        }
+    }
+
+    private bool TrySpeakDirectly(string message)
+    {
+        if (_closing || _speakMessage is null || string.IsNullOrWhiteSpace(message))
+            return false;
+        try { return _speakMessage(message); }
+        catch (Exception exception) when (exception is not OutOfMemoryException)
+        {
+            Trace.WriteLine(exception);
+            return false;
         }
     }
 

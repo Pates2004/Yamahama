@@ -1,12 +1,12 @@
 # Yamahama — pilot Yamaha SR-C30A dla Windows
 
-Nieoficjalny pilot Bluetooth Low Energy, napisany w C# / WPF, z interfejsem polskim i angielskim. Wersja testowa: **0.17.0**. Projekt nie jest powiązany z Yamaha Corporation ani przez nią dostarczany lub zatwierdzony. Nazwy produktów należą do ich właścicieli. [English documentation](README.en.md).
+Nieoficjalny pilot Bluetooth Low Energy, napisany w C# / WPF, z interfejsem polskim i angielskim. Wersja testowa: **0.18.0**. Projekt nie jest powiązany z Yamaha Corporation ani przez nią dostarczany lub zatwierdzony. Nazwy produktów należą do ich właścicieli. [English documentation](README.en.md).
 
 ## Wymagania i uruchomienie
 
 Windows 10 2004 lub nowszy / Windows 11 **x64**, adapter i sterownik BLE, soundbar w zasięgu oraz **.NET Desktop Runtime 10 x64**. Program nie dołącza runtime; jego brak wywołuje standardowy komunikat hosta .NET. Nie wymaga instalatora, telefonu ani administratora, ale folder programu musi pozwalać na zapis.
 
-Po lokalnej kompilacji uruchom `installfiles/Yamahama.exe`. Zachowaj obok EXE folder `langs` z `pl.lng` i `en.lng`; sam EXE nie jest kompletnym pakietem. Pobranie źródeł nie dostarcza gotowego programu.
+Po lokalnej kompilacji uruchom `installfiles/Yamahama.exe`. Zachowaj obok EXE folder `langs` z `pl.lng` i `en.lng`, plik `prism.dll` oraz folder `licenses`; sam EXE nie jest kompletnym pakietem. Pobranie źródeł nie dostarcza gotowego programu.
 
 Pierwsza konfiguracja wymaga języka, jasnego lub ciemnego motywu i poprawnego zapisu. X lub Anuluj kończy nieukończoną konfigurację; Escape jej nie zamyka. Później w Ustawieniach dostępne są też motyw systemowy, podpowiedzi i tekst **100–200%**.
 
@@ -57,7 +57,15 @@ Menu zasobnika podaje bieżącą jasność wskaźników, a jej opcje, wejścia i
 
 W **Plik → Ustawienia → Skróty klawiszowe** każda akcja ma pole kombinacji i przycisk **Przechwyć skrót**. Możesz też wpisać np. `Ctrl+Alt+Shift+Up`; puste pole usuwa przypisanie. Globalne skróty są domyślnie wyłączone, działają tylko podczas działania aplikacji, także w zasobniku, a zmiany wymagają **OK**. Powtórzone, nieprawidłowe lub zajęte kombinacje powodują komunikat zamiast cichego zapisu. **Przywróć domyślne ustawienia** przywraca przypisania i wyłącza skróty po potwierdzeniu i OK. Domyślne kombinacje `Ctrl+Alt+Shift` z `Up`/`Down` regulują głośność, z `Right`/`Left` wzmocnienie subwoofera, z `M` wyciszenie, z `P` zasilanie, a z `Y` pokazują okno; pozostałe akcje są nieprzypisane. Zwykłe klawisze pisania, sama kombinacja z Shift i zarezerwowane skróty systemowe nie są przechwytywane.
 
-Na karcie **Sterowanie i komunikaty** są niezależne opcje ogłaszania wyników poleceń aplikacji oraz **zmian wykonanych poza aplikacją** (domyślnie wyłączona). Druga działa po połączeniu również przy ukrytym oknie i ogłasza zmienione wartości, także gdy używasz suwaków. Nie powtarza niezmienionych odczytów ani pierwszego odczytu po połączeniu. Bluetooth nie określa, czy zmianę wykonał pilot, telefon czy panel; zmiany podczas polecenia aplikacji mogą być zgłoszone razem z jego wynikiem. Odczyt w tle odbywa się mniej więcej co sekundę, więc szybkie zmiany pomiędzy odczytami mogą nie zostać osobno ogłoszone. Nadal wymagane jest połączenie BLE i czytnik obsługujący powiadomienia UI Automation.
+Na karcie **Sterowanie i komunikaty** są niezależne opcje ogłaszania wyników poleceń aplikacji oraz **zmian wykonanych poza aplikacją** (domyślnie wyłączona). Druga działa po połączeniu również przy ukrytym oknie i ogłasza zmienione wartości, także gdy używasz suwaków. Nie powtarza niezmienionych odczytów ani pierwszego odczytu po połączeniu. Bluetooth nie określa, czy zmianę wykonał pilot, telefon czy panel; zmiany podczas polecenia aplikacji mogą być zgłoszone razem z jego wynikiem. Odczyt w tle odbywa się mniej więcej co sekundę, więc szybkie zmiany pomiędzy odczytami mogą nie zostać osobno ogłoszone. Nadal wymagane jest połączenie BLE i działający czytnik ekranu; kanał Prism opisano poniżej.
+
+## Mowa czytnika przez Prism
+
+W **Ustawienia → Sterowanie i komunikaty** osobno wybierzesz używanie Prism dla zmian stanu urządzenia, komunikatów operacji oraz błędów i ostrzeżeń. Ten wybór jest też w pierwszej konfiguracji. Te trzy opcje są domyślnie włączone, ale **nie włączają wyłączonych ogłoszeń stanu ani komunikatów operacji**. Wybierają kanał komunikacji, nie usuwają błędów z ekranu.
+
+Prism wysyła wybrane komunikaty bezpośrednio do działającego czytnika: przy aktywnym oknie, po przełączeniu Alt+Tab, po zminimalizowaniu oraz po schowaniu programu w zasobniku. Nie przywołuje okna i nie zmienia fokusu. Nie prosi o przerwanie bieżącej mowy ani o zmianę głosu, tempa lub głośności. Wybiera jeden dostępny czytnik (NVDA ma pierwszeństwo); nie uruchamia samodzielnego głosu SAPI/OneCore. Gdy Prism jest wyłączony dla kategorii albo niedostępny, pozostają powiadomienia UI Automation, których odczyt w tle zależy od czytnika. Po udanym odczycie przez Prism program nie wysyła drugiego powiadomienia UIA ani dodatkowego dymka z tym samym komunikatem. Normalny odczyt fokusu i stanów kontrolek przez czytnik pozostaje niezależny.
+
+Integracja korzysta z **Prismatoid 0.4.0 / Prism 0.17.3**, nie z frameworka aplikacyjnego Prism WPF. Natywne `prism.dll` pozostaje obok EXE; wersja nadal wymaga .NET Desktop Runtime 10. Licencje i odnośniki do przypiętych źródeł: [komponenty zewnętrzne](docs/third-party/README.md), po publikacji również folder `licenses`.
 
 ## Połączenie i ustawienia domyślne
 

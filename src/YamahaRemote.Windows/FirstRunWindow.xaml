@@ -43,6 +43,13 @@
                       AutomationProperties.Name="{DynamicResource Feedback.AnnounceChanges}" />
             <CheckBox x:Name="AnnounceExternalStateChangesChoice" Content="{DynamicResource Feedback.AnnounceExternalChanges}" Margin="0,10" Style="{StaticResource WrappingCheckBoxStyle}"
                       AutomationProperties.Name="{DynamicResource Feedback.AnnounceExternalChanges}" />
+            <TextBlock Text="{DynamicResource Speech.PrismHeading}" TextWrapping="Wrap" Margin="0,10" />
+            <CheckBox x:Name="PrismStateChangesChoice" Content="{DynamicResource Speech.PrismStateChanges}" Margin="0,10" Style="{StaticResource WrappingCheckBoxStyle}"
+                      AutomationProperties.Name="{DynamicResource Speech.PrismStateChanges}" />
+            <CheckBox x:Name="PrismOperationsChoice" Content="{DynamicResource Speech.PrismOperations}" Margin="0,10" Style="{StaticResource WrappingCheckBoxStyle}"
+                      AutomationProperties.Name="{DynamicResource Speech.PrismOperations}" />
+            <CheckBox x:Name="PrismImportantChoice" Content="{DynamicResource Speech.PrismImportant}" Margin="0,10" Style="{StaticResource WrappingCheckBoxStyle}"
+                      AutomationProperties.Name="{DynamicResource Speech.PrismImportant}" />
         </StackPanel>
         </ScrollViewer>
         <TextBox x:Name="SetupStatus" Grid.Row="2" IsReadOnly="True" IsReadOnlyCaretVisible="True" TextWrapping="Wrap"

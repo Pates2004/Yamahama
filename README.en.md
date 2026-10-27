@@ -1,12 +1,12 @@
 # Yamahama — Yamaha SR-C30A remote for Windows
 
-An unofficial Bluetooth Low Energy remote, written in C# / WPF with Polish and English interfaces. Test version: **0.17.0**. The project is not affiliated with, supplied by or endorsed by Yamaha Corporation. Product names belong to their owners. [Polska dokumentacja](README.md).
+An unofficial Bluetooth Low Energy remote, written in C# / WPF with Polish and English interfaces. Test version: **0.18.0**. The project is not affiliated with, supplied by or endorsed by Yamaha Corporation. Product names belong to their owners. [Polska dokumentacja](README.md).
 
 ## Requirements and setup
 
 Windows 10 2004 or later / Windows 11 **x64**, a BLE adapter and driver, a nearby soundbar and **.NET Desktop Runtime 10 x64** are required. The runtime is not bundled; if missing, the standard .NET host message appears. No installer, phone or administrator privileges are needed, but the application folder must be writable.
 
-After building locally, run `installfiles/Yamahama.exe`. Keep `langs` with `pl.lng` and `en.lng` beside the EXE; the EXE alone is not a complete package. Downloading source files does not provide a ready-built application.
+After building locally, run `installfiles/Yamahama.exe`. Keep the `langs` folder with `pl.lng` and `en.lng`, `prism.dll` and the `licenses` folder beside the EXE; the EXE alone is not a complete package. Downloading source files does not provide a ready-built application.
 
 First-run setup requires a language, a Light or Dark theme and a successful save. X or Cancel exits incomplete setup; Escape does not close it. Settings later also provides the System theme, hints and **100–200%** text size.
 
@@ -57,7 +57,15 @@ The tray menu includes current indicator brightness; brightness, input and mode 
 
 In **File → Settings → Keyboard shortcuts**, each action has a combination field and **Capture shortcut** button. You can also enter e.g. `Ctrl+Alt+Shift+Up`; an empty field removes a binding. Global shortcuts are disabled by default, work only while the application runs, including in the tray, and changes require **OK**. Duplicate, invalid or occupied combinations report an error instead of silently saving. **Restore default settings** restores bindings and disables shortcuts after confirmation and OK. Default `Ctrl+Alt+Shift` combinations with `Up`/`Down` adjust volume, `Right`/`Left` adjust subwoofer gain, `M` toggles mute, `P` toggles power and `Y` shows the window; other actions are unassigned. Ordinary typing keys, Shift-only combinations and reserved system shortcuts are not captured.
 
-**Controls and feedback** provides independent options for announcing application command results and **changes made outside the application** (off by default). The latter also works while hidden and includes level changes when sliders are configured. It does not repeat unchanged readings or the first reading after connection. Bluetooth does not identify whether the remote, phone or panel made a change; changes during an application command may be announced with its result. Background polling occurs approximately every second, so rapid intermediate changes may not be individually announced. A BLE connection and a screen reader supporting UI Automation notifications remain required.
+**Controls and feedback** provides independent options for announcing application command results and **changes made outside the application** (off by default). The latter also works while hidden and includes level changes when sliders are configured. It does not repeat unchanged readings or the first reading after connection. Bluetooth does not identify whether the remote, phone or panel made a change; changes during an application command may be announced with its result. Background polling occurs approximately every second, so rapid intermediate changes may not be individually announced. A BLE connection and a running screen reader remain required; the Prism channel is described below.
+
+## Screen-reader speech through Prism
+
+In **Settings → Controls and feedback**, choose Prism independently for device-state changes, operation messages, and errors/warnings. These choices also appear during first-run setup. All three channel choices default to on, but **do not enable disabled state or operation announcements**. They select the delivery channel, not removal of visible errors.
+
+Prism sends selected messages directly to a running reader with the application active, after Alt+Tab, minimized, or hidden in the tray. It does not bring the window forward or move focus. It requests neither interruption of current speech nor changes to the reader's voice, rate or volume. It selects one available reader, preferring NVDA, and does not start a standalone SAPI/OneCore voice. When Prism is disabled for a category or unavailable, UI Automation remains the fallback; its background delivery depends on the reader. Successful Prism speech does not also raise the same UIA notification or an additional tray balloon. Normal screen-reader focus and control-state feedback remains independent.
+
+The integration uses **Prismatoid 0.4.0 / Prism 0.17.3**, not the Prism WPF application framework. Native `prism.dll` stays beside the EXE; .NET Desktop Runtime 10 is still required. Licences and pinned source links: [third-party components](docs/third-party/README.md), also available in the published `licenses` folder.
 
 ## Connection and defaults
 
