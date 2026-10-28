@@ -1,6 +1,6 @@
 # Yamahama — Yamaha SR-C30A remote for Windows
 
-An unofficial Bluetooth Low Energy remote, written in C# / WPF with Polish and English interfaces. Test version: **0.18.0**. The project is not affiliated with, supplied by or endorsed by Yamaha Corporation. Product names belong to their owners. [Polska dokumentacja](README.md).
+An unofficial Bluetooth Low Energy remote, written in C# / WPF with Polish and English interfaces. Test version: **0.18.1**. The project is not affiliated with, supplied by or endorsed by Yamaha Corporation. Product names belong to their owners. [Polska dokumentacja](README.md).
 
 ## Requirements and setup
 
@@ -97,7 +97,9 @@ Windows startup applies at the current user's sign-in and may be blocked by Wind
 
 **Power protection** operates after a powered-on state is confirmed in the current session, including in the tray. It does not wake a device already off when connected. State is checked about every 15 seconds; repeated power-on attempts/retries are limited to one per 60 seconds. Active BLE and an awake computer are required; factory auto-standby is not changed.
 
-**Important:** the cause of standby is unknown. Protection may turn on a soundbar switched off by the remote, touch panel or application. Disable it to leave the device in standby.
+**Turning off from Yamahama is intentional.** Using its window, tray menu or global shortcut pauses protection until power-on is confirmed again. The saved protection preference remains enabled. A failed or cancelled command still reports an uncertain outcome; a new powered-on reading resumes protection. Disconnecting clears the intent, and a new session with an already-standby device does not wake it.
+
+Bluetooth cannot distinguish the other sources: the remote, touch panel, phone and automatic standby may trigger power-on. Disable protection in Settings to allow those controls to leave the device in standby too.
 
 **Turn off the soundbar when exiting the application** is independent and off by default. On actual exit, the application stops protection, drains cancelled operations and reads fresh state. It turns off only the currently connected, verified soundbar, including a one-time session; an already-off device is skipped. It never reconnects or sends PowerOn. Fresh confirmation is required within a bounded time. Failure or uncertainty produces a warning — application exit alone does not prove hardware power-off.
 

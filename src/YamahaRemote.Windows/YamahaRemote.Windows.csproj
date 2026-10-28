@@ -12,7 +12,7 @@
     <Description>Unofficial Yamaha SR-C30A remote for Windows</Description>
     <RootNamespace>YamahaRemote.Windows</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.18.0</Version>
+    <Version>0.18.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/Pates2004/Yamahama</RepositoryUrl>

@@ -333,10 +333,24 @@ public partial class MainWindow : Window
         return ExecuteAsync(Localization.Text("Command.Pending", description), async token =>
         {
             SoundbarState? before = _controller.State;
-            await _controller.SendAsync(command, token);
-            token.ThrowIfCancellationRequested();
-            CaptureFreshState(before);
-            return Localization.Text("Command.Confirmed", description);
+            bool manualPowerOff = command == SoundbarCommand.PowerOff;
+            if (manualPowerOff)
+                _powerProtectionPolicy.BeginManualPowerOff(before);
+            try
+            {
+                await _controller.SendAsync(command, token);
+                token.ThrowIfCancellationRequested();
+                CaptureFreshState(before);
+                if (command == SoundbarCommand.PowerOff && _lastState?.Power != false
+                    || command == SoundbarCommand.PowerOn && _lastState?.Power != true)
+                    throw new LocalizedOperationException("Bluetooth.ChangeUnconfirmed");
+                return Localization.Text("Command.Confirmed", description);
+            }
+            finally
+            {
+                if (manualPowerOff)
+                    _powerProtectionPolicy.CompleteManualPowerOff(_controller.State);
+            }
         }, requiresConnection: true, changesState: true, invalidateOnFailure: true,
             requiresPower: command is not (SoundbarCommand.PowerOn or SoundbarCommand.PowerOff));
     }
@@ -412,7 +426,7 @@ public partial class MainWindow : Window
         _connectionLossMessage = null;
         _busy = true;
         _canCancel = canCancel;
-        _mutationInProgress = changesState;
+        _mutationInProgress = false;
         UpdateAvailability();
         SetStatus(pendingMessage);
         _operationTask = CompleteOperationAsync(operation, cancellation, successFocus, previousFocus,
@@ -426,10 +440,12 @@ public partial class MainWindow : Window
     {
         bool succeeded = false;
         bool important = false;
+        bool operationStarted = false;
+        bool mutationAttempted = false;
         string message;
         try
         {
-            await _powerProtectionTask;
+            await _powerProtectionTask.WaitAsync(cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
             if (requiresPower && IsSoundbarInStandby)
             {
@@ -440,6 +456,8 @@ public partial class MainWindow : Window
             }
             else
             {
+                operationStarted = true;
+                mutationAttempted = _mutationInProgress = changesState;
                 message = await operation(cancellation.Token);
                 cancellation.Token.ThrowIfCancellationRequested();
                 if (_connectionLossMessage is not null)
@@ -449,16 +467,16 @@ public partial class MainWindow : Window
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            important = changesState || _connectionLossMessage is not null;
+            important = mutationAttempted || _connectionLossMessage is not null;
             message = _connectionLossMessage ?? Localization.Text("Operation.Cancelled");
-            if (changesState)
+            if (mutationAttempted)
                 message += UncertainEffect;
         }
         catch (Exception exception)
         {
             message = Localization.Text("Operation.Unconfirmed") + DescribeError(exception);
             important = true;
-            if (changesState)
+            if (mutationAttempted)
                 message += UncertainEffect;
         }
         finally
@@ -471,11 +489,11 @@ public partial class MainWindow : Window
         }
         if (_closing)
         {
-            if (!succeeded && changesState)
+            if (!succeeded && mutationAttempted)
                 _shutdownOperationWarning = message;
             return;
         }
-        if (!succeeded && invalidateOnFailure)
+        if (!succeeded && invalidateOnFailure && operationStarted)
             InvalidateReadout();
         if (!_controller.IsConnected)
             _sessionConnected = false;
@@ -483,7 +501,7 @@ public partial class MainWindow : Window
         UpdateAvailability();
         if (_powerProtectionUncertain && !Connected)
         {
-            if (succeeded || !changesState)
+            if (succeeded || !mutationAttempted)
                 message += UncertainEffect;
             important = true;
         }
@@ -544,6 +562,7 @@ public partial class MainWindow : Window
         {
             if (generation != Interlocked.Read(ref _connectionGeneration) || !_sessionConnected || _controller.IsConnected)
                 return;
+            _powerProtectionUncertain |= _powerProtectionMutationInProgress;
             Interlocked.Increment(ref _connectionGeneration);
             _connectionLossMessage = Localization.Text("Connection.Lost") + reason;
             _sessionConnected = false;

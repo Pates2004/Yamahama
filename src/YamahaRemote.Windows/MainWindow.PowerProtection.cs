@@ -80,7 +80,7 @@ public partial class MainWindow
                 _powerProtectionUncertain = false;
                 SetStatus(Localization.Text("PowerProtection.Restored"));
             }
-            _powerProtectionPolicy.Succeed();
+            _powerProtectionPolicy.Succeed(_lastState?.Power == true);
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
@@ -108,7 +108,7 @@ public partial class MainWindow
             if (SessionIsCurrent())
             {
                 InvalidateReadout();
-                if (_powerProtectionPolicy.Fail())
+                if (_powerProtectionPolicy.Fail(attemptedPowerOn))
                     SetStatus(Localization.Text("PowerProtection.Failed") + DescribeError(exception)
                         + (attemptedPowerOn ? UncertainEffect : string.Empty), important: true);
             }

@@ -145,7 +145,7 @@ public sealed partial class WindowFlowTests
 
     private static async Task ExerciseProtectionInterruptionAsync()
     {
-        foreach (string interruption in new[] { "disconnect", "lost", "queued", "close" })
+        foreach (string interruption in new[] { "disconnect", "lost", "queued", "queued-refresh", "close" })
         {
             string path = ConfigurationTests.TestPath($"protection-interruption-{interruption}.json");
             Assert.True(new UiPreferences
@@ -170,10 +170,12 @@ public sealed partial class WindowFlowTests
             Assert.Single(controller.Commands);
             if (interruption == "disconnect")
                 ((Button)window.FindName("DisconnectButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            else if (interruption is "lost" or "queued")
+            else if (interruption is "lost" or "queued" or "queued-refresh")
             {
                 if (interruption == "queued")
                     ((CheckBox)window.FindName("MuteToggle")).IsChecked = true;
+                if (interruption == "queued-refresh")
+                    ((Button)window.FindName("RefreshButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 controller.DropConnection();
             }
             else

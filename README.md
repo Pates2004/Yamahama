@@ -1,6 +1,6 @@
 # Yamahama — pilot Yamaha SR-C30A dla Windows
 
-Nieoficjalny pilot Bluetooth Low Energy, napisany w C# / WPF, z interfejsem polskim i angielskim. Wersja testowa: **0.18.0**. Projekt nie jest powiązany z Yamaha Corporation ani przez nią dostarczany lub zatwierdzony. Nazwy produktów należą do ich właścicieli. [English documentation](README.en.md).
+Nieoficjalny pilot Bluetooth Low Energy, napisany w C# / WPF, z interfejsem polskim i angielskim. Wersja testowa: **0.18.1**. Projekt nie jest powiązany z Yamaha Corporation ani przez nią dostarczany lub zatwierdzony. Nazwy produktów należą do ich właścicieli. [English documentation](README.en.md).
 
 ## Wymagania i uruchomienie
 
@@ -97,7 +97,9 @@ Autostart działa przy logowaniu bieżącego użytkownika i może być blokowany
 
 **Ochrona przed wyłączeniem** działa po potwierdzeniu włączonego zasilania w bieżącej sesji, także w zasobniku. Nie budzi urządzenia już wyłączonego przy połączeniu. Sprawdza stan co około 15 sekund; ponowne włączenia/ponowienia ogranicza do jednej próby na 60 sekund. Wymaga aktywnego BLE i nieuśpionego komputera; nie zmienia fabrycznego auto-standby.
 
-**Uwaga:** przyczyna czuwania jest nieznana. Ochrona może ponownie włączyć soundbar wyłączony pilotem, panelem lub aplikacją. Wyłącz ją, aby pozostawić urządzenie w czuwaniu.
+**Wyłączenie z Yamahamy jest celowe.** Wyłączenie w oknie, menu zasobnika lub skrótem globalnym zawiesza ochronę do ponownego potwierdzenia włączonego zasilania. Ustawienie ochrony pozostaje zapisane jako włączone. Nieudane lub anulowane polecenie nadal zgłasza niepewny skutek; nowy odczyt włączonego urządzenia przywraca ochronę. Po rozłączeniu zamiar jest zerowany, a nowa sesja z urządzeniem już w czuwaniu go nie wybudza.
+
+Bluetooth nie rozróżnia pozostałych źródeł wyłączenia: pilot, panel dotykowy, telefon i automatyczne czuwanie mogą uruchomić ponowne włączenie. Wyłącz ochronę w ustawieniach, jeśli chcesz pozostawiać urządzenie w czuwaniu również przy takim sterowaniu.
 
 **Wyłączaj soundbar przy zamykaniu programu** to niezależna opcja, domyślnie wyłączona. Przy rzeczywistym wyjściu aplikacja zatrzymuje ochronę, kończy anulowanie operacji i odczytuje świeży stan. Wyłącza tylko aktualnie połączony, zweryfikowany soundbar, także w sesji jednorazowej; pomija już wyłączony. Nie łączy się ponownie ani nie wysyła PowerOn. Wymaga świeżego potwierdzenia w ograniczonym czasie. Błąd lub niepewny skutek powoduje ostrzeżenie — samo zamknięcie programu nie dowodzi wyłączenia sprzętu.
 

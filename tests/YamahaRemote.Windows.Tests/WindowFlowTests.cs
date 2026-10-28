@@ -74,6 +74,8 @@ public sealed partial class WindowFlowTests
                         await ExerciseAutoConnectAsync();
                         Volatile.Write(ref currentScenario, nameof(ExercisePowerProtectionAsync));
                         await ExercisePowerProtectionAsync();
+                        Volatile.Write(ref currentScenario, nameof(ExercisePowerIntentAsync));
+                        await ExercisePowerIntentAsync();
                         Volatile.Write(ref currentScenario, nameof(ExerciseExitPowerAsync));
                         await ExerciseExitPowerAsync();
                         Volatile.Write(ref currentScenario, nameof(ExerciseDeviceStorageAsync));
